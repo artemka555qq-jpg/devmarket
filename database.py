@@ -40,7 +40,7 @@ def init_db():
                     "Готовый Telegram-бот на Python: погода, курсы крипты, игры, цитаты и шутки. Чистая модульная архитектура, токен в .env, запуск за 5 минут.",
                     499.00,
                     "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=900",
-                    "https://example.com/bot.zip",
+                    "https://drive.google.com/uc?export=download&id=1HLlCFcHwPvs3dEgMD1H6BN4bmiPtM_gS",
                     "Боты",
                     "ХИТ"
                 ),
