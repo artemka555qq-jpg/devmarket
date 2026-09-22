@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Реквизиты — {{ brand.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-content">
+        <h1>Реквизиты</h1>
+
+        <p>Информация о продавце цифровых товаров.</p>
+
+        <h2>Основные данные</h2>
+        <ul>
+            <li><strong>Наименование:</strong> Самозанятый (плательщик НПД)</li>
+            <li><strong>ИНН:</strong> 644404177210</li>
+            <li><strong>Статус:</strong> Самозанятый (налог на профессиональный доход)</li>
+        </ul>
+
+        <h2>Контакты</h2>
+        <ul>
+            <li><strong>Email:</strong> <a href="mailto:{{ brand.contacts.email }}">{{ brand.contacts.email }}</a></li>
+            <li><strong>Telegram:</strong> <a href="https://t.me/{{ brand.contacts.telegram[1:] }}" target="_blank">{{ brand.contacts.telegram }}</a></li>
+        </ul>
+
+        <h2>Оплата и доставка</h2>
+        <p>
+            Оплата производится через сервис <strong>ЮKassa</strong>. Все товары являются цифровыми и
+            доставляются мгновенно после оплаты — ссылка на скачивание отправляется на указанный при оплате email.
+        </p>
+
+        <h2>Возврат средств</h2>
+        <p>
+            Возврат возможен в течение 14 дней, если товар не был использован. Для возврата свяжитесь с нами по email.
+        </p>
+    </div>
+</div>
+{% endblock %}

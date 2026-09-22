@@ -4,22 +4,23 @@
 {% block content %}
 <div class="container">
     <div class="hero">
-        <span class="hero-badge">Новинки 2026 года</span>
+        <span class="hero-badge">Цифровые товары 2026</span>
         <h1>{{ brand.name }}</h1>
         <p>{{ brand.description }}</p>
 
-        <div class="stats-row">
-            <div class="stat-item">
-                <span class="stat-value">{{ brand.stats.products }}</span>
-                <span class="stat-label">Товаров</span>
+        <!-- Преимущества вместо вымышленной статистики -->
+        <div class="advantages">
+            <div class="advantage-item">
+                <span class="advantage-icon">⚡</span>
+                <span>Мгновенная доставка</span>
             </div>
-            <div class="stat-item">
-                <span class="stat-value">{{ brand.stats.clients }}</span>
-                <span class="stat-label">Клиентов</span>
+            <div class="advantage-item">
+                <span class="advantage-icon">📜</span>
+                <span>Лицензия для коммерции</span>
             </div>
-            <div class="stat-item">
-                <span class="stat-value">{{ brand.stats.rating }} ★</span>
-                <span class="stat-label">Рейтинг</span>
+            <div class="advantage-item">
+                <span class="advantage-icon">🛠</span>
+                <span>Поддержка и обновления</span>
             </div>
         </div>
     </div>

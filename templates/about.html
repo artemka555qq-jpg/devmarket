@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}О нас — {{ brand.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-content">
+        <h1>О нас</h1>
+
+        <p>
+            <strong>{{ brand.name }}</strong> — это магазин цифровых товаров для разработчиков,
+            предпринимателей и всех, кто хочет запустить свой проект быстро и без лишних затрат.
+        </p>
+
+        <h2>Что мы предлагаем</h2>
+        <ul>
+            <li>🎮 <strong>Telegram-боты</strong> — готовые решения для бизнеса, магазинов, поддержки.</li>
+            <li>🌐 <strong>Шаблоны сайтов</strong> — каталоги, магазины, блоги на Flask.</li>
+            <li>📜 <strong>Гайды</strong> — подробные PDF-инструкции по деплою и настройке.</li>
+            <li>💻 <strong>Скрипты</strong> — парсеры, автоматизация, утилиты на Python.</li>
+        </ul>
+
+        <h2>Почему мы</h2>
+        <ul>
+            <li>⚡ Мгновенная доставка — все файлы доступны сразу после оплаты.</li>
+            <li>📖 Подробные инструкции — с каждым товаром идёт README.</li>
+            <li>🛠 Поддержка — помогаем с настройкой, если возникнут вопросы.</li>
+            <li>📜 Лицензия — можно использовать в коммерческих проектах.</li>
+        </ul>
+
+        <h2>Наша миссия</h2>
+        <p>
+            Мы делаем разработку доступнее: вместо недель работы над типовыми задачами —
+            готовые решения за пару минут.
+        </p>
+
+        <div class="contact-block">
+            <h3>Свяжитесь с нами</h3>
+            <p>
+                Telegram:
+                <a href="https://t.me/{{ brand.contacts.telegram[1:] }}" target="_blank">{{ brand.contacts.telegram }}</a>
+            </p>
+            <p>
+                Email:
+                <a href="mailto:{{ brand.contacts.email }}">{{ brand.contacts.email }}</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

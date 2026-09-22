@@ -19,8 +19,8 @@
             </a>
             <div class="nav-links">
                 <a href="/">Каталог</a>
-                <a href="/#about">О нас</a>
-                <a href="/#contact">Контакты</a>
+                <a href="/about">О нас</a>
+                <a href="/contact">Контакты</a>
             </div>
         </div>
     </nav>
@@ -41,10 +41,18 @@
     </main>
 
     <footer class="footer">
-        <p>© {{ brand.year }} <strong>{{ brand.name }}</strong> — {{ brand.tagline }}</p>
-        <p style="margin-top: 0.5rem; font-size: 0.8rem;">
-            Сделано с 💜 в 2026 году
-        </p>
+        <div class="footer-content">
+            <p><strong>{{ brand.name }}</strong> — {{ brand.tagline }}</p>
+            <p>© {{ brand.year }} Все права защищены</p>
+            <p class="footer-contacts">
+                Связь:
+                <a href="https://t.me/{{ brand.contacts.telegram[1:] }}" target="_blank">{{ brand.contacts.telegram }}</a>
+                •
+                <a href="mailto:{{ brand.contacts.email }}">{{ brand.contacts.email }}</a>
+                •
+                <a href="/requisites">Реквизиты</a>
+            </p>
+        </div>
     </footer>
 </body>
 </html>

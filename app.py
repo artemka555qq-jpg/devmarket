@@ -23,14 +23,13 @@ if SHOP_ID and SECRET_KEY:
 # 🎨 Информация о бренде
 BRAND = {
     "name": "DevMarket",
-    "tagline": "Цифровые товары для разработчиков",
+    "tagline": "Готовые решения для разработчиков",
     "year": 2026,
-    "description": "Готовые боты, шаблоны сайтов, скрипты и гайды. Всё, что нужно для запуска проекта — за пару кликов.",
-    "stats": {
-        "products": "50+",
-        "clients": "1200+",
-        "rating": "4.9",
-    }
+    "description": "Цифровые товары, которые работают с первого запуска. Боты, сайты, скрипты и гайды — всё для вашего проекта.",
+    "contacts": {
+        "telegram": "@devmarket_support",
+        "email": "support@devmarket.ru",
+    },
 }
 
 
@@ -43,6 +42,23 @@ def inject_brand():
 def index():
     products = db.get_all_products()
     return render_template("index.html", products=products)
+
+
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+
+@app.route("/contact", methods=["GET", "POST"])
+def contact():
+    if request.method == "POST":
+        return render_template("contact.html", success=True)
+    return render_template("contact.html", success=False)
+
+
+@app.route("/requisites")
+def requisites():
+    return render_template("requisites.html")
 
 
 @app.route("/product/<int:product_id>")
@@ -59,7 +75,6 @@ def create_payment(product_id):
     if not product:
         abort(404)
 
-    # Проверка: настроены ли ключи ЮKassa
     if not (SHOP_ID and SECRET_KEY):
         return render_template(
             "success.html",
