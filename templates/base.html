@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ brand.name }} — {{ brand.tagline }}{% endblock %}</title>
+    <meta name="description" content="{{ brand.description }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <span class="logo-mark">◆</span>
+                <span>{{ brand.name }}</span>
+            </a>
+            <div class="nav-links">
+                <a href="/">Каталог</a>
+                <a href="/#about">О нас</a>
+                <a href="/#contact">Контакты</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        {% if error_404 %}
+            <div class="container">
+                <div class="success-page error-page">
+                    <div class="success-icon">🔍</div>
+                    <h1>404</h1>
+                    <p>Страница не найдена</p>
+                    <a href="/" class="btn btn-primary" style="margin-top: 2rem;">← На главную</a>
+                </div>
+            </div>
+        {% else %}
+            {% block content %}{% endblock %}
+        {% endif %}
+    </main>
+
+    <footer class="footer">
+        <p>© {{ brand.year }} <strong>{{ brand.name }}</strong> — {{ brand.tagline }}</p>
+        <p style="margin-top: 0.5rem; font-size: 0.8rem;">
+            Сделано с 💜 в 2026 году
+        </p>
+    </footer>
+</body>
+</html>

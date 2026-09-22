@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}{{ brand.name }} — Цифровые товары 2026{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="hero">
+        <span class="hero-badge">Новинки 2026 года</span>
+        <h1>{{ brand.name }}</h1>
+        <p>{{ brand.description }}</p>
+
+        <div class="stats-row">
+            <div class="stat-item">
+                <span class="stat-value">{{ brand.stats.products }}</span>
+                <span class="stat-label">Товаров</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">{{ brand.stats.clients }}</span>
+                <span class="stat-label">Клиентов</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">{{ brand.stats.rating }} ★</span>
+                <span class="stat-label">Рейтинг</span>
+            </div>
+        </div>
+    </div>
+
+    {% if products %}
+    <div class="products-grid">
+        {% for product in products %}
+        <a href="/product/{{ product['id'] }}" class="product-card">
+            <div class="product-image-wrap">
+                {% if product['image_url'] %}
+                    <img src="{{ product['image_url'] }}" alt="{{ product['title'] }}" class="product-image">
+                {% else %}
+                    <div class="product-image-placeholder">📦</div>
+                {% endif %}
+
+                {% if product['badge'] %}
+                    {% set badge_class = 'badge-hit' if product['badge'] == 'ХИТ' else
+                                         'badge-new' if product['badge'] == 'NEW' else
+                                         'badge-top' if product['badge'] == 'TOP' else
+                                         'badge-pro' %}
+                    <span class="product-badge {{ badge_class }}">{{ product['badge'] }}</span>
+                {% endif %}
+            </div>
+
+            <div class="product-body">
+                <span class="product-category">{{ product['category'] }}</span>
+                <h3 class="product-title">{{ product['title'] }}</h3>
+                <p class="product-description">{{ product['description'][:110] }}{% if product['description']|length > 110 %}...{% endif %}</p>
+
+                <div class="product-footer">
+                    <span class="product-price">{{ product['price'] }} ₽</span>
+                    <span class="btn btn-primary btn-sm">Подробнее →</span>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">📦</div>
+        <h2>Товаров пока нет</h2>
+        <p>Заглядывайте позже — мы добавляем новое каждый день</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

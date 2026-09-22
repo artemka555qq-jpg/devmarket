@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Оплата — {{ brand.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="success-page {% if error %}error-page{% endif %}">
+        {% if error %}
+            <div class="success-icon">❌</div>
+            <h1>Что-то пошло не так</h1>
+            <p>{{ message }}</p>
+            <a href="/" class="btn btn-primary" style="margin-top: 2rem;">← Вернуться в каталог</a>
+        {% else %}
+            <div class="success-icon">🎉</div>
+            <h1>Оплата прошла успешно!</h1>
+            <p>Спасибо за покупку{% if product %} — «{{ product['title'] }}»{% endif %}!</p>
+            <p style="margin-top: 0.5rem;">Ссылка на скачивание отправлена на вашу почту.</p>
+            <a href="/" class="btn btn-primary" style="margin-top: 2rem;">← Вернуться в каталог</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

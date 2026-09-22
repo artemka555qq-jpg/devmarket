@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ product['title'] }} — {{ brand.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <a href="/" class="btn btn-outline btn-sm" style="margin-bottom: 2rem;">← Назад в каталог</a>
+
+    <div class="product-page">
+        <div>
+            {% if product['image_url'] %}
+                <img src="{{ product['image_url'] }}" alt="{{ product['title'] }}" class="product-page-image">
+            {% else %}
+                <div class="product-image-placeholder" style="border-radius: 24px; height: 450px; font-size: 8rem;">📦</div>
+            {% endif %}
+        </div>
+
+        <div class="product-page-info">
+            <span class="product-category">{{ product['category'] }}</span>
+            <h1>{{ product['title'] }}</h1>
+            <p class="product-page-description">{{ product['description'] }}</p>
+            <div class="product-page-price">{{ product['price'] }} ₽</div>
+
+            <form action="/create_payment/{{ product['id'] }}" method="post">
+                <button type="submit" class="btn btn-success">
+                    💳 Купить сейчас
+                </button>
+            </form>
+
+            <div class="features-box">
+                <h4>✅ Что вы получите:</h4>
+                <ul>
+                    <li>Полный исходный код</li>
+                    <li>Подробная инструкция по установке</li>
+                    <li>Лицензия на личное и коммерческое использование</li>
+                    <li>Мгновенная доставка после оплаты</li>
+                    <li>Поддержка и обновления</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
