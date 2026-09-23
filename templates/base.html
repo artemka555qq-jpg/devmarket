@@ -11,74 +11,131 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="/" class="logo">
-                <span class="logo-mark">◆</span>
-                <span>{{ brand.name }}</span>
-            </a>
 
-            <button class="burger" id="burger" aria-label="Меню">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
+<!-- Cursor glow -->
+<div class="cursor-glow" id="cursor-glow"></div>
 
-            <div class="nav-links" id="nav-links">
-                <a href="/">Каталог</a>
-                <a href="/about">О нас</a>
-                <a href="/contact">Контакты</a>
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="/" class="logo">
+            <span>{{ brand.name }}</span>
+        </a>
+
+        <button class="burger" id="burger" aria-label="Меню">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <div class="nav-links" id="nav-links">
+            <a href="/">Главная</a>
+            <a href="/search">Товары</a>
+            <a href="/about">О нас</a>
+            <a href="/contact">Контакты</a>
+            {% if session.get("username") %}
+                <a href="/logout" class="nav-user">👤 {{ session.username }}</a>
+            {% else %}
+                <a href="/login">Войти</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<main>
+    {% if error_404 %}
+        <div class="container">
+            <div class="success-page error-page">
+                <div class="success-icon">🔍</div>
+                <h1>404</h1>
+                <p>Страница не найдена</p>
+                <a href="/" class="btn btn-primary" style="margin-top: 2rem;">← На главную</a>
             </div>
         </div>
-    </nav>
+    {% else %}
+        {% block content %}{% endblock %}
+    {% endif %}
+</main>
 
-    <main>
-        {% if error_404 %}
-            <div class="container">
-                <div class="success-page error-page">
-                    <div class="success-icon">🔍</div>
-                    <h1>404</h1>
-                    <p>Страница не найдена</p>
-                    <a href="/" class="btn btn-primary" style="margin-top: 2rem;">← На главную</a>
-                </div>
+<!-- Toast-уведомления -->
+<div class="toast-container" id="toast-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, msg in messages %}
+            <div class="toast toast-{{ category }}" data-auto-close="4000">
+                <span class="toast-icon">
+                    {% if category == 'success' %}✅{% else %}⚠️{% endif %}
+                </span>
+                <span class="toast-text">{{ msg }}</span>
+                <button class="toast-close" onclick="this.parentElement.remove()">×</button>
             </div>
-        {% else %}
-            {% block content %}{% endblock %}
-        {% endif %}
-    </main>
+        {% endfor %}
+    {% endwith %}
+</div>
 
-    <footer class="footer">
-        <div class="footer-content">
-            <p><strong>{{ brand.name }}</strong> — {{ brand.tagline }}</p>
-            <p>© {{ brand.year }} Все права защищены</p>
-            <p class="footer-contacts">
-                Связь:
-                <a href="https://t.me/{{ brand.contacts.telegram[1:] }}" target="_blank">{{ brand.contacts.telegram }}</a>
-                •
-                <a href="mailto:{{ brand.contacts.email }}">{{ brand.contacts.email }}</a>
-                •
-                <a href="/requisites">Реквизиты</a>
-            </p>
-        </div>
-    </footer>
+<footer class="footer">
+    <div class="footer-content">
+        <p><strong>{{ brand.name }}</strong> — {{ brand.tagline }}</p>
+        <p>© {{ brand.year }} Все права защищены</p>
+        <p class="footer-contacts">
+            Связь:
+            <a href="https://t.me/{{ brand.contacts.telegram[1:] }}" target="_blank">{{ brand.contacts.telegram }}</a>
+            •
+            <a href="mailto:{{ brand.contacts.email }}">{{ brand.contacts.email }}</a>
+            •
+            <a href="/requisites">Реквизиты</a>
+            •
+            <a href="/admin">Админка</a>
+        </p>
+    </div>
+</footer>
 
-    <script>
-        const burger = document.getElementById('burger');
-        const navLinks = document.getElementById('nav-links');
+<script>
+// Бургер-меню
+const burger = document.getElementById('burger');
+const navLinks = document.getElementById('nav-links');
+if (burger) {
+    burger.addEventListener('click', () => {
+        burger.classList.toggle('active');
+        navLinks.classList.toggle('active');
+    });
+    navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            burger.classList.remove('active');
+            navLinks.classList.remove('active');
+        });
+    });
+}
 
-        if (burger) {
-            burger.addEventListener('click', () => {
-                burger.classList.toggle('active');
-                navLinks.classList.toggle('active');
-            });
+// Cursor glow
+const glow = document.getElementById('cursor-glow');
+if (glow && window.innerWidth > 768) {
+    document.addEventListener('mousemove', e => {
+        glow.style.left = e.clientX + 'px';
+        glow.style.top = e.clientY + 'px';
+    });
+}
 
-            navLinks.querySelectorAll('a').forEach(link => {
-                link.addEventListener('click', () => {
-                    burger.classList.remove('active');
-                    navLinks.classList.remove('active');
-                });
-            });
-        }
-    </script>
+// Автозакрытие toast-уведомлений
+document.querySelectorAll('.toast[data-auto-close]').forEach(toast => {
+    setTimeout(() => {
+        toast.classList.add('toast-hide');
+        setTimeout(() => toast.remove(), 400);
+    }, parseInt(toast.dataset.autoClose));
+});
+
+// Page transitions
+document.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        if (!href || href.startsWith('#') || href.startsWith('http') || this.target === '_blank') return;
+        e.preventDefault();
+        document.body.classList.add('page-exit');
+        setTimeout(() => { window.location.href = href; }, 200);
+    });
+});
+
+document.body.classList.add('page-enter');
+</script>
+
+{% block scripts %}{% endblock %}
 </body>
 </html>

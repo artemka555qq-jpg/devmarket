@@ -1,12 +1,11 @@
 /* ============================================
-   DevMarket — Aurora Design 2026
+   DevMarket — Aurora Design 2026 (ФИНАЛЬНАЯ)
    ============================================ */
 
 :root {
     --bg-base: #05050d;
     --bg-elevated: #0c0c1a;
     --bg-glass: rgba(20, 20, 40, 0.5);
-    --bg-glass-hover: rgba(30, 30, 55, 0.65);
 
     --aurora-1: #00d9ff;
     --aurora-2: #7c3aed;
@@ -33,7 +32,6 @@
 html {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
 }
 
 body {
@@ -44,9 +42,13 @@ body {
     line-height: 1.6;
     overflow-x: hidden;
     position: relative;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
-/* Aurora-фон */
+body.page-enter { opacity: 1; }
+body.page-exit { opacity: 0; }
+
 body::before {
     content: '';
     position: fixed;
@@ -97,6 +99,40 @@ body::after {
     50% { transform: scale(1.08); }
 }
 
+@keyframes cardFadeIn {
+    from { opacity: 0; transform: translateY(30px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes toastSlideIn {
+    from { opacity: 0; transform: translateX(120%); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Cursor glow */
+.cursor-glow {
+    position: fixed;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(124, 58, 237, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.3s;
+    z-index: 1;
+    mix-blend-mode: screen;
+    filter: blur(20px);
+}
+
+@media (max-width: 768px) {
+    .cursor-glow { display: none; }
+}
+
 /* Навигация */
 .navbar {
     position: sticky;
@@ -125,24 +161,8 @@ body::after {
     text-decoration: none;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
     color: var(--text-primary);
-}
-
-.logo-mark {
-    display: inline-flex;
-    width: 36px;
-    height: 36px;
-    align-items: center;
-    justify-content: center;
-    border-radius: 12px;
-    background: linear-gradient(135deg, var(--aurora-1), var(--aurora-2), var(--aurora-3));
-    background-size: 200% 200%;
-    animation: gradientMove 4s ease infinite;
-    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.5);
-    color: white;
-    font-size: 1.1rem;
-    font-weight: 900;
+    letter-spacing: -0.5px;
 }
 
 .burger {
@@ -165,17 +185,9 @@ body::after {
     transition: all 0.3s;
 }
 
-.burger.active span:nth-child(1) {
-    transform: translateY(7px) rotate(45deg);
-}
-
-.burger.active span:nth-child(2) {
-    opacity: 0;
-}
-
-.burger.active span:nth-child(3) {
-    transform: translateY(-7px) rotate(-45deg);
-}
+.burger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.burger.active span:nth-child(2) { opacity: 0; }
+.burger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
 .nav-links {
     display: flex;
@@ -208,6 +220,12 @@ body::after {
 }
 
 .nav-links a:hover::after { width: 100%; }
+
+.nav-user {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
 
 /* Контейнер */
 .container {
@@ -291,9 +309,7 @@ body::after {
     font-size: 0.95rem;
 }
 
-.advantage-icon {
-    font-size: 1.2rem;
-}
+.advantage-icon { font-size: 1.2rem; }
 
 /* Сетка товаров */
 .products-grid {
@@ -315,30 +331,22 @@ body::after {
     position: relative;
     text-decoration: none;
     color: inherit;
+    animation: cardFadeIn 0.6s ease forwards;
+    opacity: 0;
 }
 
-.product-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 24px;
-    padding: 1px;
-    background: linear-gradient(135deg, var(--aurora-1), var(--aurora-2), var(--aurora-3));
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.4s;
-    pointer-events: none;
-    z-index: 2;
-}
+.product-card:nth-child(1) { animation-delay: 0.05s; }
+.product-card:nth-child(2) { animation-delay: 0.1s; }
+.product-card:nth-child(3) { animation-delay: 0.15s; }
+.product-card:nth-child(4) { animation-delay: 0.2s; }
+.product-card:nth-child(5) { animation-delay: 0.25s; }
+.product-card:nth-child(6) { animation-delay: 0.3s; }
 
 .product-card:hover {
     transform: translateY(-8px);
     box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5), 0 0 60px rgba(124, 58, 237, 0.25);
+    border-color: rgba(124, 58, 237, 0.5);
 }
-
-.product-card:hover::before { opacity: 1; }
 
 .product-image-wrap {
     position: relative;
@@ -461,6 +469,8 @@ body::after {
 
 .btn-primary {
     background: linear-gradient(135deg, var(--aurora-2), var(--aurora-3));
+    background-size: 200% 200%;
+    animation: gradientMove 4s ease infinite;
     color: white;
     box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
 }
@@ -472,6 +482,8 @@ body::after {
 
 .btn-success {
     background: linear-gradient(135deg, var(--aurora-4), #0891b2);
+    background-size: 200% 200%;
+    animation: gradientMove 4s ease infinite;
     color: white;
     font-size: 1.05rem;
     padding: 1rem 2.25rem;
@@ -496,10 +508,189 @@ body::after {
     background: rgba(0, 217, 255, 0.05);
 }
 
+.btn-danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger:hover {
+    background: rgba(239, 68, 68, 0.3);
+    color: white;
+}
+
 .btn-sm {
     padding: 0.55rem 1.1rem;
     font-size: 0.85rem;
 }
+
+.btn-full {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1rem;
+}
+
+/* Формы */
+input,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="url"],
+textarea,
+select {
+    background-color: #0f0f1e !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 1rem !important;
+    padding: 0.9rem 1.1rem !important;
+    outline: none !important;
+    width: 100%;
+    transition: all 0.3s;
+    -webkit-appearance: none;
+    appearance: none;
+    color-scheme: dark;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #6b6b8f !important;
+    opacity: 1 !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: #00d9ff !important;
+    box-shadow: 0 0 0 4px rgba(0, 217, 255, 0.15) !important;
+    background-color: #14142a !important;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #ffffff !important;
+    -webkit-box-shadow: 0 0 0 1000px #0f0f1e inset !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+option {
+    background: #0f0f1e !important;
+    color: #ffffff !important;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    font-size: 0.9rem;
+    color: #b4b4d0;
+    font-weight: 500;
+}
+
+.form-group small {
+    color: #6b6b8f;
+    font-size: 0.78rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+/* Поиск */
+.search-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.search-header h1 {
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 50%, #f0abfc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -1px;
+}
+
+.search-count {
+    color: #b4b4d0;
+    font-size: 0.95rem;
+}
+
+.search-box {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 3rem;
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+}
+
+.search-box input {
+    flex: 1;
+}
+
+/* Формы входа/регистрации */
+.auth-page {
+    max-width: 440px;
+    margin: 3rem auto;
+    padding: 2.5rem;
+    background: rgba(20, 20, 40, 0.5);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    animation: cardFadeIn 0.5s ease;
+}
+
+.auth-page h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 50%, #f0abfc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.auth-subtitle {
+    color: #b4b4d0;
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.auth-switch {
+    text-align: center;
+    color: #b4b4d0;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.auth-switch a {
+    color: #00d9ff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-switch a:hover { text-decoration: underline; }
 
 /* Страница товара */
 .product-page {
@@ -582,7 +773,7 @@ body::after {
     box-shadow: 0 0 10px var(--aurora-4);
 }
 
-/* Страницы about/contact */
+/* Страницы about/contact/requisites */
 .page-content {
     max-width: 780px;
     margin: 0 auto;
@@ -619,11 +810,7 @@ body::after {
     margin-bottom: 1rem;
 }
 
-.page-content ul {
-    list-style: none;
-    padding: 0;
-    margin-bottom: 1.5rem;
-}
+.page-content ul { list-style: none; padding: 0; margin-bottom: 1.5rem; }
 
 .page-content ul li {
     color: var(--text-secondary);
@@ -634,13 +821,9 @@ body::after {
 .page-content a {
     color: var(--aurora-1);
     text-decoration: none;
-    transition: opacity 0.2s;
 }
 
-.page-content a:hover {
-    opacity: 0.8;
-    text-decoration: underline;
-}
+.page-content a:hover { text-decoration: underline; }
 
 .contact-block {
     margin-top: 2rem;
@@ -662,37 +845,6 @@ body::after {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-}
-
-.form-group label {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-.form-group input,
-.form-group textarea {
-    background: var(--bg-glass);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.8rem 1rem;
-    color: var(--text-primary);
-    font-family: inherit;
-    font-size: 0.95rem;
-    outline: none;
-    transition: border-color 0.2s;
-}
-
-.form-group input:focus,
-.form-group textarea:focus {
-    border-color: var(--aurora-1);
-    box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
 }
 
 .contact-info {
@@ -781,6 +933,124 @@ body::after {
     font-size: 1.5rem;
 }
 
+/* Админка */
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.admin-card {
+    background: rgba(20, 20, 40, 0.5);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.admin-card h3 {
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 0.9rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 0.9rem;
+}
+
+.admin-table th {
+    color: #b4b4d0;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+}
+
+.admin-table tr:hover { background: rgba(255, 255, 255, 0.03); }
+
+/* Toast-уведомления */
+.toast-container {
+    position: fixed;
+    top: 90px;
+    right: 20px;
+    z-index: 9000;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 400px;
+    pointer-events: none;
+}
+
+.toast {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-radius: 14px;
+    backdrop-filter: blur(24px);
+    border: 1px solid;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: white;
+    pointer-events: auto;
+    animation: toastSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.4s, transform 0.4s;
+}
+
+.toast-hide {
+    opacity: 0;
+    transform: translateX(120%);
+}
+
+.toast-success {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.4);
+}
+
+.toast-error {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+.toast-icon { font-size: 1.2rem; flex-shrink: 0; }
+.toast-text { flex: 1; line-height: 1.4; }
+
+.toast-close {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.toast-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
 /* Футер */
 .footer {
     text-align: center;
@@ -788,288 +1058,4 @@ body::after {
     color: var(--text-muted);
     border-top: 1px solid var(--border);
     margin-top: 4rem;
-    font-size: 0.9rem;
-    background: rgba(5, 5, 13, 0.4);
-    backdrop-filter: blur(10px);
-}
-
-.footer-content p {
-    margin-bottom: 0.4rem;
-}
-
-.footer strong {
-    background: linear-gradient(135deg, var(--aurora-1), var(--aurora-3));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    font-weight: 700;
-}
-
-.footer-contacts a {
-    color: var(--text-secondary);
-    text-decoration: none;
-    transition: color 0.2s;
-}
-
-.footer-contacts a:hover {
-    color: var(--aurora-1);
-}
-
-/* ============================================
-   Мобильная адаптация
-   ============================================ */
-
-@media (max-width: 768px) {
-    .burger {
-        display: flex;
-    }
-
-    .nav-links {
-        position: fixed;
-        top: 0;
-        right: -100%;
-        width: 80%;
-        max-width: 320px;
-        height: 100vh;
-        background: rgba(10, 10, 25, 0.98);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 80px 32px 32px;
-        gap: 0;
-        transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        border-left: 1px solid var(--border);
-        z-index: 150;
-    }
-
-    .nav-links.active {
-        right: 0;
-    }
-
-    .nav-links a {
-        width: 100%;
-        padding: 18px 0;
-        font-size: 1.15rem;
-        font-weight: 600;
-        border-bottom: 1px solid var(--border);
-    }
-
-    .nav-links a:last-child {
-        border-bottom: none;
-    }
-
-    .nav-links a::after {
-        display: none;
-    }
-
-    .container {
-        padding: 1.5rem 1rem;
-    }
-
-    .nav-container {
-        padding: 0 1rem;
-    }
-
-    .hero {
-        padding: 2rem 0 2.5rem;
-    }
-
-    .hero h1 {
-        font-size: 2.2rem;
-        letter-spacing: -1px;
-        line-height: 1.15;
-        margin-bottom: 1rem;
-    }
-
-    .hero p {
-        font-size: 1rem;
-        line-height: 1.6;
-        margin-bottom: 1.75rem;
-    }
-
-    .hero-badge {
-        font-size: 0.78rem;
-        padding: 0.35rem 0.9rem;
-        margin-bottom: 1.25rem;
-    }
-
-    .advantages {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
-        padding: 1.25rem;
-        margin-top: 1.75rem;
-    }
-
-    .advantage-item {
-        font-size: 0.95rem;
-        width: 100%;
-    }
-
-    .products-grid {
-        grid-template-columns: 1fr;
-        gap: 1.25rem;
-    }
-
-    .product-card {
-        border-radius: 20px;
-    }
-
-    .product-image-wrap {
-        height: 180px;
-    }
-
-    .product-body {
-        padding: 1.25rem;
-    }
-
-    .product-title {
-        font-size: 1.1rem;
-        line-height: 1.35;
-        margin-bottom: 0.5rem;
-    }
-
-    .product-description {
-        font-size: 0.92rem;
-        line-height: 1.55;
-        margin-bottom: 1rem;
-    }
-
-    .product-footer {
-        padding-top: 1rem;
-    }
-
-    .product-price {
-        font-size: 1.35rem;
-    }
-
-    .btn {
-        padding: 0.85rem 1.4rem;
-        font-size: 0.95rem;
-        min-height: 44px;
-    }
-
-    .btn-sm {
-        padding: 0.6rem 1rem;
-        font-size: 0.85rem;
-        min-height: 38px;
-    }
-
-    .btn-success {
-        font-size: 1rem;
-        padding: 1rem 1.75rem;
-        width: 100%;
-    }
-
-    .product-page {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-
-    .product-page-info h1 {
-        font-size: 1.6rem;
-        line-height: 1.2;
-        margin-bottom: 0.75rem;
-    }
-
-    .product-page-description {
-        font-size: 1rem;
-        line-height: 1.65;
-    }
-
-    .product-page-price {
-        font-size: 2.2rem;
-        margin-bottom: 1.25rem;
-    }
-
-    .features-box {
-        padding: 1.25rem;
-        margin-top: 1.5rem;
-    }
-
-    .features-box li {
-        font-size: 0.95rem;
-        line-height: 1.9;
-    }
-
-    .page-content h1 {
-        font-size: 1.75rem;
-        margin-bottom: 1rem;
-    }
-
-    .page-content h2 {
-        font-size: 1.25rem;
-        margin: 1.5rem 0 0.75rem;
-    }
-
-    .page-content h3 {
-        font-size: 1.1rem;
-    }
-
-    .page-content p,
-    .page-content li {
-        font-size: 1rem;
-        line-height: 1.7;
-    }
-
-    .contact-grid {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-
-    .contact-form .form-group input,
-    .contact-form .form-group textarea {
-        font-size: 1rem;
-        padding: 0.85rem 1rem;
-    }
-
-    .footer {
-        padding: 2rem 1rem;
-        font-size: 0.88rem;
-    }
-
-    .footer-contacts {
-        line-height: 1.9;
-        display: flex;
-        flex-direction: column;
-        gap: 0.3rem;
-    }
-
-    .success-page {
-        padding: 3rem 1.25rem;
-    }
-
-    .success-icon {
-        font-size: 4.5rem;
-        margin-bottom: 1.25rem;
-    }
-
-    .success-page h1 {
-        font-size: 1.6rem;
-    }
-
-    .success-page p {
-        font-size: 1rem;
-    }
-}
-
-@media (max-width: 380px) {
-    .hero h1 {
-        font-size: 1.9rem;
-    }
-
-    .product-page-price {
-        font-size: 1.9rem;
-    }
-
-    .logo {
-        font-size: 1.2rem;
-    }
-
-    .logo-mark {
-        width: 32px;
-        height: 32px;
-        font-size: 1rem;
-    }
-}
+    font
