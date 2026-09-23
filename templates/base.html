@@ -12,9 +12,6 @@
 </head>
 <body>
 
-<!-- Cursor glow -->
-<div class="cursor-glow" id="cursor-glow"></div>
-
 <nav class="navbar">
     <div class="nav-container">
         <a href="/" class="logo">
@@ -105,15 +102,6 @@ if (burger) {
     });
 }
 
-// Cursor glow
-const glow = document.getElementById('cursor-glow');
-if (glow && window.innerWidth > 768) {
-    document.addEventListener('mousemove', e => {
-        glow.style.left = e.clientX + 'px';
-        glow.style.top = e.clientY + 'px';
-    });
-}
-
 // Автозакрытие toast-уведомлений
 document.querySelectorAll('.toast[data-auto-close]').forEach(toast => {
     setTimeout(() => {
@@ -121,19 +109,6 @@ document.querySelectorAll('.toast[data-auto-close]').forEach(toast => {
         setTimeout(() => toast.remove(), 400);
     }, parseInt(toast.dataset.autoClose));
 });
-
-// Page transitions
-document.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', function(e) {
-        const href = this.getAttribute('href');
-        if (!href || href.startsWith('#') || href.startsWith('http') || this.target === '_blank') return;
-        e.preventDefault();
-        document.body.classList.add('page-exit');
-        setTimeout(() => { window.location.href = href; }, 200);
-    });
-});
-
-document.body.classList.add('page-enter');
 </script>
 
 {% block scripts %}{% endblock %}
