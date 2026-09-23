@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Premium — {{ brand.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="premium-hero">
+        <div class="premium-icon">💎</div>
+        <h1>{{ t('premium') }}</h1>
+        <p class="premium-subtitle">{{ t('premium_description') }}</p>
+    </div>
+
+    {% if current_user and current_user['is_premium'] %}
+        <div class="premium-active-card">
+            <h2>✅ {{ t('premium_active') }}</h2>
+            <p>Действует до: {{ current_user['premium_until'] }}</p>
+        </div>
+    {% else %}
+        <div class="premium-card">
+            <h2>{{ t('premium') }}</h2>
+            <p class="premium-price">{{ price }} ₽ <span>/ месяц</span></p>
+
+            <ul class="premium-features">
+                <li>✅ Доступ ко всем премиум-товарам</li>
+                <li>✅ Скидка 20% на все покупки</li>
+                <li>✅ Приоритетная поддержка</li>
+                <li>✅ Ранний доступ к новинкам</li>
+                <li>✅ Без рекламы</li>
+                <li>✅ Эксклюзивные промокоды</li>
+            </ul>
+
+            {% if current_user %}
+                <form method="post" action="/premium/buy">
+                    <div class="form-group">
+                        <label>Ваш email</label>
+                        <input type="email" name="buyer_email" class="form-input" value="{{ current_user['email'] }}" required>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-full">{{ t('become_premium') }}</button>
+                </form>
+            {% else %}
+                <a href="/login" class="btn btn-primary btn-full">Войдите, чтобы купить</a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

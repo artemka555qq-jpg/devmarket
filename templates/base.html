@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="{{ lang }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
+<body class="theme-{{ session.get('theme', 'dark') }}">
 
 <nav class="navbar">
     <div class="nav-container">
@@ -21,34 +21,67 @@
         </button>
 
         <div class="nav-links" id="nav-links">
-            <a href="/">Главная</a>
-            <a href="/search">Товары</a>
-            <a href="/faq">FAQ</a>
-            <a href="/about">О нас</a>
-            <a href="/contact">Контакты</a>
+            <a href="/">{{ t('home') }}</a>
+            <a href="/search">{{ t('products') }}</a>
+            <a href="/blog">{{ t('blog') }}</a>
+            <a href="/faq">{{ t('faq') }}</a>
+            <a href="/premium">💎 {{ t('premium') }}</a>
+
+            <!-- Переключатели -->
+            <div class="nav-controls">
+                <div class="lang-switch">
+                    <a href="/set-lang/ru" class="{% if lang == 'ru' %}active{% endif %}">RU</a>
+                    <a href="/set-lang/en" class="{% if lang == 'en' %}active{% endif %}">EN</a>
+                </div>
+
+                <a href="/set-theme/{% if session.get('theme', 'dark') == 'dark' %}light{% else %}dark{% endif %}" class="theme-switch" title="Тема">
+                    {% if session.get('theme', 'dark') == 'dark' %}☀️{% else %}🌙{% endif %}
+                </a>
+
+                {% if current_user %}
+                    <a href="/cart" class="cart-btn">
+                        🛒
+                        {% if cart_count > 0 %}
+                            <span class="cart-badge">{{ cart_count }}</span>
+                        {% endif %}
+                    </a>
+                {% endif %}
+            </div>
 
             {% if current_user %}
                 <div class="user-menu">
                     <button class="user-menu-btn" id="user-menu-btn">
-                        <span class="user-avatar">{{ current_user['username'][0]|upper }}</span>
-                        <span class="user-name">{{ current_user['username'] }}</span>
+                        {% if current_user['avatar'] %}
+                            <img src="{{ url_for('static', filename='avatars/' + current_user['avatar']) }}" class="user-avatar-img" alt="Avatar">
+                        {% else %}
+                            <span class="user-avatar">{{ current_user['username'][0]|upper }}</span>
+                        {% endif %}
+                        <span class="user-name">
+                            {{ current_user['username'] }}
+                            {% if current_user['is_premium'] %}💎{% endif %}
+                        </span>
                         <span class="user-arrow">▾</span>
                     </button>
                     <div class="user-dropdown" id="user-dropdown">
                         <a href="/profile" class="user-dropdown-item">
-                            <span>👤</span> Мой профиль
+                            <span>👤</span> {{ t('profile') }}
                         </a>
                         <a href="/favorites" class="user-dropdown-item">
-                            <span>⭐</span> Избранное
+                            <span>⭐</span> {{ t('favorites') }}
                         </a>
+                        {% if not current_user['is_premium'] %}
+                            <a href="/premium" class="user-dropdown-item">
+                                <span>💎</span> Premium
+                            </a>
+                        {% endif %}
                         <div class="user-dropdown-divider"></div>
                         <a href="/logout" class="user-dropdown-item user-dropdown-danger">
-                            <span>🚪</span> Выйти
+                            <span>🚪</span> {{ t('logout') }}
                         </a>
                     </div>
                 </div>
             {% else %}
-                <a href="/login" class="nav-login-btn">Войти</a>
+                <a href="/login" class="nav-login-btn">{{ t('login') }}</a>
             {% endif %}
         </div>
     </div>
@@ -95,7 +128,6 @@
 </footer>
 
 <script>
-// Бургер-меню
 const burger = document.getElementById('burger');
 const navLinks = document.getElementById('nav-links');
 if (burger) {
@@ -111,7 +143,6 @@ if (burger) {
     });
 }
 
-// Выпадающее меню пользователя
 const userMenuBtn = document.getElementById('user-menu-btn');
 const userDropdown = document.getElementById('user-dropdown');
 if (userMenuBtn && userDropdown) {
@@ -120,7 +151,6 @@ if (userMenuBtn && userDropdown) {
         userMenuBtn.classList.toggle('active');
         userDropdown.classList.toggle('active');
     });
-
     document.addEventListener('click', (e) => {
         if (!userMenuBtn.contains(e.target) && !userDropdown.contains(e.target)) {
             userMenuBtn.classList.remove('active');
@@ -129,7 +159,6 @@ if (userMenuBtn && userDropdown) {
     });
 }
 
-// Автозакрытие toast
 document.querySelectorAll('.toast[data-auto-close]').forEach(toast => {
     setTimeout(() => {
         toast.classList.add('toast-hide');

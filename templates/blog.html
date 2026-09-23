@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Блог — {{ brand.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="page-title">📝 Блог</h1>
+    <p style="color: #b4b4d0; margin-bottom: 2rem;">Полезные статьи о разработке, заработке и Telegram-ботах.</p>
+
+    {% if posts %}
+        <div class="blog-grid">
+            {% for post in posts %}
+                <a href="/blog/{{ post['slug'] }}" class="blog-card">
+                    {% if post['image_url'] %}
+                        <div class="blog-image" style="background-image: url('{{ post['image_url'] }}');"></div>
+                    {% else %}
+                        <div class="blog-image blog-image-placeholder">📝</div>
+                    {% endif %}
+                    <div class="blog-body">
+                        <h3 class="blog-title">{{ post['title'] }}</h3>
+                        <p class="blog-excerpt">{{ post['excerpt'] or post['content'][:120] }}...</p>
+                        <span class="blog-date">{{ post['created_at'][:10] }}</span>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📝</div>
+            <h2>Статей пока нет</h2>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

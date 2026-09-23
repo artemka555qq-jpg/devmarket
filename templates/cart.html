@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Корзина — {{ brand.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="page-title">🛒 {{ t('cart') }}</h1>
+
+    {% if items %}
+        <div class="cart-grid">
+            <div class="cart-items">
+                {% for item in items %}
+                    <div class="cart-item">
+                        <div class="cart-item-image">
+                            {% if item['image_url'] %}
+                                <img src="{{ item['image_url'] }}" alt="{{ item['title'] }}">
+                            {% else %}
+                                <div class="cart-item-placeholder">📦</div>
+                            {% endif %}
+                        </div>
+                        <div class="cart-item-info">
+                            <a href="/product/{{ item['id'] }}" class="cart-item-title">{{ item['title'] }}</a>
+                            <p class="cart-item-category">{{ item['category'] }}</p>
+                            <p class="cart-item-price">{{ item['price'] }} ₽ × {{ item['quantity'] }}</p>
+                        </div>
+                        <form method="post" action="/cart/remove/{{ item['id'] }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+                        </form>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="cart-summary">
+                <h3>{{ t('total') }}</h3>
+                <p class="cart-total">{{ total }} ₽</p>
+
+                <form method="post" action="/cart/checkout">
+                    <div class="form-group">
+                        <label>Ваш email</label>
+                        <input type="email" name="buyer_email" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Промокод</label>
+                        <input type="text" name="promo_code" class="form-input" placeholder="WELCOME10">
+                    </div>
+                    <button type="submit" class="btn btn-success btn-full">{{ t('checkout') }}</button>
+                </form>
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">🛒</div>
+            <h2>{{ t('empty_cart') }}</h2>
+            <a href="/search" class="btn btn-primary" style="margin-top: 1.5rem;">Перейти в каталог</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
