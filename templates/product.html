@@ -3,9 +3,10 @@
 
 {% block content %}
 <div class="container">
-    <a href="/" class="btn btn-outline btn-sm" style="margin-bottom: 2rem;">← Назад в каталог</a>
+    <a href="/search" class="btn btn-outline btn-sm" style="margin-bottom: 2rem;">← Назад в каталог</a>
 
     <div class="product-page">
+        <!-- Левая колонка: картинка -->
         <div>
             {% if product['image_url'] %}
                 <img src="{{ product['image_url'] }}" alt="{{ product['title'] }}" class="product-page-image">
@@ -14,26 +15,44 @@
             {% endif %}
         </div>
 
+        <!-- Правая колонка: инфо, купить, фичи -->
         <div class="product-page-info">
             <span class="product-category">{{ product['category'] }}</span>
+
             <h1>{{ product['title'] }}</h1>
 
+            <!-- Кнопка избранного -->
+            {% if session.get("user_id") %}
+                <form method="post" action="/product/{{ product['id'] }}/favorite" style="margin-bottom: 1.25rem;">
+                    <button type="submit" class="fav-btn {% if is_fav %}active{% endif %}">
+                        {% if is_fav %}⭐ В избранном{% else %}☆ В избранное{% endif %}
+                    </button>
+                </form>
+            {% endif %}
+
+            <!-- Рейтинг -->
             {% if avg_rating %}
                 <div class="product-rating">
                     {% for i in range(1, 6) %}
-                        {% if i <= avg_rating|round(0, 'floor') %}
+                        {% if i <= avg_rating|round(0, 'floor')|int %}
                             ⭐
                         {% else %}
                             ☆
                         {% endif %}
                     {% endfor %}
-                    <span class="rating-text">{{ avg_rating }} / 5 ({{ reviews_count }} отзыв{{ 'ов' if reviews_count > 1 else '' }})</span>
+                    <span class="rating-text">{{ avg_rating }} / 5 ({{ reviews_count }} отзыв{{ 'ов' if reviews_count != 1 else '' }})</span>
+                </div>
+            {% else %}
+                <div class="product-rating">
+                    <span class="rating-text">Отзывов пока нет — будьте первым!</span>
                 </div>
             {% endif %}
 
             <p class="product-page-description">{{ product['description'] }}</p>
+
             <div class="product-page-price">{{ product['price'] }} ₽</div>
 
+            <!-- Форма покупки -->
             <form action="/create_payment/{{ product['id'] }}" method="post" class="buy-form">
                 <div class="form-group">
                     <label>Ваш email (для получения товара)</label>
@@ -50,6 +69,7 @@
                 </button>
             </form>
 
+            <!-- Что вы получите -->
             <div class="features-box">
                 <h4>✅ Что вы получите:</h4>
                 <ul>
@@ -67,7 +87,7 @@
     <div class="reviews-section">
         <h2>💬 Отзывы покупателей {% if reviews_count %}({{ reviews_count }}){% endif %}</h2>
 
-        {% if session.get("username") %}
+        {% if session.get("user_id") %}
             <form method="post" action="/product/{{ product['id'] }}/review" class="review-form">
                 <div class="form-group">
                     <label>Ваша оценка</label>

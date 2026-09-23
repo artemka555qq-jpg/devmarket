@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}FAQ — {{ brand.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-content">
+        <h1>❓ Частые вопросы</h1>
+        <p>Ответы на популярные вопросы о покупках, оплате и товарах.</p>
+
+        <div class="faq-list">
+            {% for item in items %}
+                <details class="faq-item">
+                    <summary>{{ item['question'] }}</summary>
+                    <p>{{ item['answer'] }}</p>
+                </details>
+            {% endfor %}
+        </div>
+
+        <div class="contact-block" style="margin-top: 3rem;">
+            <h3>Не нашли ответ?</h3>
+            <p>Напишите нам — ответим в течение дня.</p>
+            <p>💬 Telegram: <a href="https://t.me/{{ brand.contacts.telegram[1:] }}" target="_blank">{{ brand.contacts.telegram }}</a></p>
+            <p>📧 Email: <a href="mailto:{{ brand.contacts.email }}">{{ brand.contacts.email }}</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

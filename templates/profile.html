@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Личный кабинет — {{ brand.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="page-title">👤 Личный кабинет</h1>
+
+    <div class="profile-grid">
+        <!-- Левая колонка -->
+        <div>
+            <div class="profile-card">
+                <h3>Основные данные</h3>
+                <p><strong>Логин:</strong> {{ user['username'] }}</p>
+                <p><strong>Email:</strong> {{ user['email'] }}</p>
+                <p><strong>Дата регистрации:</strong> {{ user['created_at'] }}</p>
+            </div>
+
+            <div class="profile-card">
+                <h3>Сменить логин</h3>
+                <form method="post" action="/profile/username">
+                    <div class="form-group">
+                        <input type="text" name="username" class="form-input" placeholder="Новый логин" required minlength="3">
+                    </div>
+                    <button class="btn btn-primary">Сохранить логин</button>
+                </form>
+            </div>
+
+            <div class="profile-card">
+                <h3>Сменить email</h3>
+                <form method="post" action="/profile/email">
+                    <div class="form-group">
+                        <input type="email" name="email" class="form-input" placeholder="Новый email" required>
+                    </div>
+                    <button class="btn btn-primary">Сохранить email</button>
+                </form>
+            </div>
+
+            <div class="profile-card">
+                <h3>Сменить пароль</h3>
+                <form method="post" action="/profile/password">
+                    <div class="form-group">
+                        <input type="password" name="old_password" class="form-input" placeholder="Старый пароль" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" name="new_password" class="form-input" placeholder="Новый пароль" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" name="confirm_password" class="form-input" placeholder="Повторите пароль" required minlength="6">
+                    </div>
+                    <button class="btn btn-primary">Сменить пароль</button>
+                </form>
+            </div>
+
+            <div class="profile-card" style="border-color: rgba(239, 68, 68, 0.3);">
+                <h3>Выйти из аккаунта</h3>
+                <a href="/logout" class="btn btn-danger">Выйти</a>
+            </div>
+        </div>
+
+        <!-- Правая колонка -->
+        <div>
+            <div class="profile-card">
+                <h3>📦 Мои заказы ({{ orders|length }})</h3>
+                {% if orders %}
+                    <div class="orders-list">
+                        {% for o in orders %}
+                            <div class="order-item">
+                                <div class="order-header">
+                                    <strong>{{ o['product_title'] or 'Товар' }}</strong>
+                                    <span class="order-status {% if o['status'] == 'paid' %}paid{% else %}pending{% endif %}">
+                                        {% if o['status'] == 'paid' %}✅ Оплачен{% else %}⏳ Ожидает{% endif %}
+                                    </span>
+                                </div>
+                                <p class="order-meta">
+                                    {{ o['created_at'] }} • {{ o['final_price'] or '—' }} ₽
+                                    {% if o['promo_code'] %} • Промокод: {{ o['promo_code'] }}{% endif %}
+                                </p>
+                                {% if o['status'] == 'paid' and o['download_url'] %}
+                                    <a href="{{ o['download_url'] }}" target="_blank" class="btn btn-success btn-sm" style="margin-top: 0.5rem;">⬇️ Скачать товар</a>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p style="color: #b4b4d0;">У вас пока нет заказов.</p>
+                    <a href="/search" class="btn btn-primary btn-sm" style="margin-top: 0.75rem;">Перейти в каталог</a>
+                {% endif %}
+            </div>
+
+            <div class="profile-card">
+                <h3>⭐ Избранное ({{ favorites|length }})</h3>
+                {% if favorites %}
+                    {% for p in favorites %}
+                        <div class="favorite-item">
+                            <a href="/product/{{ p['id'] }}">{{ p['title'] }}</a>
+                            <span>{{ p['price'] }} ₽</span>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color: #b4b4d0;">В избранном пока ничего нет.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

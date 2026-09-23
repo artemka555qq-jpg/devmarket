@@ -5,6 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import uuid
 import os
 from dotenv import load_dotenv
+from functools import wraps
 
 import database as db
 
@@ -20,14 +21,11 @@ if SHOP_ID and SECRET_KEY:
     Configuration.account_id = SHOP_ID
     Configuration.secret_key = SECRET_KEY
 
-# 🔐 Пароль для админки
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin2026")
-
-# 🔒 Секретные URL
 SECRET_ADMIN_URL = "admin-9f8a7b6c"
 SECRET_REQUISITES_URL = "requisites-3a7c2d"
 
-# 📧 Почта (для уведомлений о заказах)
+# 📧 Mail
 app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
 app.config["MAIL_PORT"] = int(os.environ.get("MAIL_PORT", 587))
 app.config["MAIL_USE_TLS"] = True
@@ -36,11 +34,9 @@ app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD", "")
 app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_USERNAME", "")
 
 mail = Mail(app)
-
 ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "support@devmarket.ru")
 
 
-# 🎨 Бренд
 BRAND = {
     "name": "DevMarket",
     "tagline": "Готовые решения для разработчиков",
@@ -57,18 +53,34 @@ ALLOWED_YOO_IPS = ('185.71.76.', '185.71.77.', '185.71.78.', '185.71.79.', '77.7
 
 @app.context_processor
 def inject_brand():
-    return {"brand": BRAND}
+    return {"brand": BRAND, "current_user": get_current_user()}
+
+
+def get_current_user():
+    """Возвращает текущего пользователя или None."""
+    if session.get("user_id"):
+        return db.get_user_by_id(session["user_id"])
+    return None
+
+
+def login_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not session.get("user_id"):
+            flash("Войдите в аккаунт", "error")
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return wrapper
 
 
 def send_email(to, subject, body):
-    """Отправляет email. Не падает, если почта не настроена."""
     if not app.config["MAIL_USERNAME"]:
         print(f"📧 [email skipped] To: {to}, Subject: {subject}")
         return
     try:
         msg = MailMessage(subject=subject, recipients=[to], body=body)
         mail.send(msg)
-        print(f"📧 Email sent to {to}: {subject}")
+        print(f"📧 Email sent to {to}")
     except Exception as e:
         print(f"❌ Email error: {e}")
 
@@ -83,16 +95,19 @@ def index():
 @app.route("/search")
 def search():
     query = request.args.get("q", "").strip()
-    if query:
-        products = db.search_products(query)
-    else:
-        products = db.get_all_products()
+    products = db.search_products(query) if query else db.get_all_products()
     return render_template("search.html", products=products, query=query)
 
 
 @app.route("/about")
 def about():
     return render_template("about.html")
+
+
+@app.route("/faq")
+def faq():
+    items = db.get_all_faq()
+    return render_template("faq.html", items=items)
 
 
 @app.route("/contact", methods=["GET", "POST"])
@@ -117,19 +132,24 @@ def product_detail(product_id):
     avg_rating, reviews_count = db.get_avg_rating(product_id)
     similar = db.get_similar_products(product_id, product["category"], limit=3)
 
+    is_fav = False
+    if session.get("user_id"):
+        is_fav = db.is_favorite(session["user_id"], product_id)
+
     return render_template(
         "product.html",
         product=product,
         reviews=reviews,
         avg_rating=avg_rating,
         reviews_count=reviews_count,
-        similar=similar
+        similar=similar,
+        is_fav=is_fav
     )
 
 
 @app.route("/product/<int:product_id>/review", methods=["POST"])
 def add_review(product_id):
-    if not session.get("username"):
+    if not session.get("user_id"):
         flash("Войдите, чтобы оставить отзыв", "error")
         return redirect(url_for("login"))
 
@@ -155,6 +175,14 @@ def add_review(product_id):
     return redirect(url_for("product_detail", product_id=product_id))
 
 
+@app.route("/product/<int:product_id>/favorite", methods=["POST"])
+@login_required
+def toggle_favorite(product_id):
+    added = db.toggle_favorite(session["user_id"], product_id)
+    flash("Добавлено в избранное ⭐" if added else "Удалено из избранного", "success")
+    return redirect(url_for("product_detail", product_id=product_id))
+
+
 # ---------- Регистрация и вход ----------
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -166,13 +194,13 @@ def register():
         if not (username and email and password):
             flash("Заполните все поля", "error")
         elif len(username) < 3:
-            flash("Логин должен быть не короче 3 символов", "error")
+            flash("Логин не короче 3 символов", "error")
         elif len(password) < 6:
-            flash("Пароль должен быть не короче 6 символов", "error")
+            flash("Пароль не короче 6 символов", "error")
         elif db.get_user_by_username(username):
-            flash("Такой логин уже занят", "error")
+            flash("Логин занят", "error")
         elif db.get_user_by_email(email):
-            flash("Такой email уже занят", "error")
+            flash("Email занят", "error")
         else:
             db.create_user(username, email, generate_password_hash(password))
             flash("Регистрация успешна! Войдите.", "success")
@@ -193,7 +221,6 @@ def login():
             session["username"] = user["username"]
             flash(f"Добро пожаловать, {user['username']}!", "success")
             return redirect(url_for("index"))
-
         flash("Неверный логин или пароль", "error")
 
     return render_template("login.html")
@@ -206,6 +233,76 @@ def logout():
     return redirect(url_for("index"))
 
 
+# ---------- Личный кабинет ----------
+@app.route("/profile")
+@login_required
+def profile():
+    user = db.get_user_by_id(session["user_id"])
+    orders = db.get_user_orders(session["user_id"])
+    favorites = db.get_user_favorites(session["user_id"])
+    return render_template("profile.html", user=user, orders=orders, favorites=favorites)
+
+
+@app.route("/profile/email", methods=["POST"])
+@login_required
+def change_email():
+    new_email = request.form.get("email", "").strip().lower()
+    if not new_email or "@" not in new_email:
+        flash("Некорректный email", "error")
+    elif new_email == session.get("email"):
+        flash("Это ваш текущий email", "error")
+    elif db.get_user_by_email(new_email):
+        flash("Email уже занят", "error")
+    else:
+        db.update_user(session["user_id"], email=new_email)
+        flash("Email обновлён", "success")
+    return redirect(url_for("profile"))
+
+
+@app.route("/profile/password", methods=["POST"])
+@login_required
+def change_password():
+    old = request.form.get("old_password", "")
+    new = request.form.get("new_password", "")
+    confirm = request.form.get("confirm_password", "")
+
+    user = db.get_user_by_id(session["user_id"])
+    if not check_password_hash(user["password_hash"], old):
+        flash("Старый пароль неверный", "error")
+    elif len(new) < 6:
+        flash("Новый пароль не короче 6 символов", "error")
+    elif new != confirm:
+        flash("Пароли не совпадают", "error")
+    else:
+        db.update_user(session["user_id"], password_hash=generate_password_hash(new))
+        flash("Пароль обновлён", "success")
+    return redirect(url_for("profile"))
+
+
+@app.route("/profile/username", methods=["POST"])
+@login_required
+def change_username():
+    new_username = request.form.get("username", "").strip()
+    if len(new_username) < 3:
+        flash("Логин не короче 3 символов", "error")
+    elif new_username == session.get("username"):
+        flash("Это ваш текущий логин", "error")
+    elif db.get_user_by_username(new_username):
+        flash("Логин занят", "error")
+    else:
+        db.update_user(session["user_id"], username=new_username)
+        session["username"] = new_username
+        flash("Логин обновлён", "success")
+    return redirect(url_for("profile"))
+
+
+@app.route("/favorites")
+@login_required
+def favorites():
+    items = db.get_user_favorites(session["user_id"])
+    return render_template("favorites.html", products=items)
+
+
 # ---------- Оплата ----------
 @app.route("/create_payment/<int:product_id>", methods=["POST"])
 def create_payment(product_id):
@@ -216,7 +313,6 @@ def create_payment(product_id):
     if not (SHOP_ID and SECRET_KEY):
         return render_template("success.html", error=True, message="ЮKassa не настроена.")
 
-    # Промокод
     promo_code = request.form.get("promo_code", "").strip().upper()
     buyer_email = request.form.get("buyer_email", "").strip()
 
@@ -228,9 +324,9 @@ def create_payment(product_id):
         if promo:
             final_price = product["price"] * (100 - promo["discount"]) / 100
             applied_promo = promo_code
-            flash(f"Промокод {promo_code} применён: скидка {promo['discount']}%", "success")
+            flash(f"Промокод {promo_code}: скидка {promo['discount']}%", "success")
         else:
-            flash(f"Промокод {promo_code} не найден", "error")
+            flash(f"Промокод не найден", "error")
             return redirect(url_for("product_detail", product_id=product_id))
 
     try:
@@ -253,7 +349,11 @@ def create_payment(product_id):
         session['current_payment_id'] = payment.id
         session['current_product_id'] = product_id
 
-        db.create_order(product_id, payment.id, "pending", buyer_email, applied_promo, final_price)
+        db.create_order(
+            product_id, payment.id, "pending",
+            buyer_email, applied_promo, final_price,
+            session.get("user_id")
+        )
 
         if applied_promo:
             db.use_promocode(applied_promo)
@@ -261,8 +361,8 @@ def create_payment(product_id):
         return redirect(payment.confirmation.confirmation_url)
 
     except Exception as e:
-        print(f"Ошибка создания платежа: {e}")
-        return render_template("success.html", error=True, message=f"Не удалось создать платёж: {e}")
+        print(f"Ошибка: {e}")
+        return render_template("success.html", error=True, message=f"Ошибка: {e}")
 
 
 @app.route("/payment_success")
@@ -276,13 +376,10 @@ def payment_success():
 def yookassa_webhook():
     client_ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip()
     if not any(client_ip.startswith(prefix) for prefix in ALLOWED_YOO_IPS):
-        print(f"🚨 Попытка несанкционированного доступа с IP: {client_ip}")
         abort(403)
 
     data = request.json
-    event = data.get("event")
-
-    if event == "payment.succeeded":
+    if data.get("event") == "payment.succeeded":
         payment_obj = data.get("object", {})
         payment_id = payment_obj.get("id")
         metadata = payment_obj.get("metadata", {})
@@ -291,23 +388,19 @@ def yookassa_webhook():
 
         db.mark_order_paid(payment_id)
 
-        # Email админу
         product = db.get_product(int(product_id)) if product_id else None
         title = product["title"] if product else "товар"
         send_email(
             ADMIN_EMAIL,
             f"💰 Новый заказ: {title}",
-            f"Платёж прошёл успешно!\n\nТовар: {title}\nPayment ID: {payment_id}\nEmail покупателя: {buyer_email or 'не указан'}"
+            f"Товар: {title}\nPayment ID: {payment_id}\nEmail: {buyer_email or 'не указан'}"
         )
-
-        # Email покупателю
         if buyer_email:
             send_email(
                 buyer_email,
-                f"Спасибо за покупку в DevMarket!",
-                f"Здравствуйте!\n\nСпасибо за покупку «{title}».\n\nСсылка на скачивание отправлена вам отдельно. Если что-то не работает — пишите на support@devmarket.ru"
+                "Спасибо за покупку в DevMarket!",
+                f"Спасибо за покупку «{title}»!\nСсылка: {product['download_url'] if product else ''}"
             )
-
         print(f"✅ Платёж {payment_id} оплачен")
 
     return "OK", 200
@@ -325,7 +418,7 @@ def admin():
     if not session.get("is_admin"):
         return render_template("admin_login.html")
 
-    # Добавление товара
+    # Добавить товар
     if request.method == "POST" and "title" in request.form:
         try:
             title = request.form.get("title", "").strip()
@@ -345,7 +438,7 @@ def admin():
         except ValueError:
             flash("Неверная цена", "error")
 
-    # Добавление промокода
+    # Промокод
     if request.method == "POST" and "promo_code" in request.form:
         code = request.form.get("promo_code", "").strip().upper()
         try:
@@ -355,7 +448,7 @@ def admin():
             discount, uses = 0, 100
 
         if not code or discount < 1 or discount > 99:
-            flash("Укажите промокод и скидку 1–99%", "error")
+            flash("Промокод и скидка 1–99%", "error")
         else:
             db.add_promocode(code, discount, uses)
             flash(f"Промокод {code} добавлен", "success")
@@ -364,7 +457,39 @@ def admin():
     products = db.get_all_products()
     orders = db.get_all_orders()
     promocodes = db.get_all_promocodes()
-    return render_template("admin.html", products=products, orders=orders, promocodes=promocodes)
+    stats = db.get_orders_stats()
+    return render_template("admin.html", products=products, orders=orders, promocodes=promocodes, stats=stats)
+
+
+@app.route(f"/{SECRET_ADMIN_URL}/edit/<int:product_id>", methods=["GET", "POST"])
+def admin_edit(product_id):
+    if not session.get("is_admin"):
+        abort(403)
+
+    product = db.get_product(product_id)
+    if not product:
+        abort(404)
+
+    if request.method == "POST":
+        try:
+            title = request.form.get("title", "").strip()
+            description = request.form.get("description", "").strip()
+            price = float(request.form.get("price", "0"))
+            image_url = request.form.get("image_url", "").strip()
+            download_url = request.form.get("download_url", "").strip()
+            category = request.form.get("category", "Прочее").strip()
+            badge = request.form.get("badge", "").strip() or None
+
+            if not (title and price > 0 and download_url):
+                flash("Заполните обязательные поля", "error")
+            else:
+                db.update_product(product_id, title, description, price, image_url, download_url, category, badge)
+                flash("Товар обновлён", "success")
+                return redirect(url_for("admin"))
+        except ValueError:
+            flash("Неверная цена", "error")
+
+    return render_template("admin_edit.html", product=product)
 
 
 @app.route(f"/{SECRET_ADMIN_URL}/delete/<int:product_id>", methods=["POST"])

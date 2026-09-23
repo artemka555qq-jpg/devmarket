@@ -28,6 +28,7 @@ def init_db():
             CREATE TABLE IF NOT EXISTS orders (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 product_id INTEGER,
+                user_id INTEGER,
                 payment_id TEXT UNIQUE,
                 status TEXT,
                 buyer_email TEXT,
@@ -60,6 +61,21 @@ def init_db():
                 uses_left INTEGER DEFAULT 100,
                 active INTEGER DEFAULT 1,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS favorites (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                product_id INTEGER NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(user_id, product_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS faq (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                question TEXT NOT NULL,
+                answer TEXT NOT NULL,
+                sort_order INTEGER DEFAULT 0
             );
         """)
 
@@ -100,9 +116,19 @@ def init_db():
                     p
                 )
 
-            # Стартовые промокоды
             conn.execute("INSERT INTO promocodes (code, discount, uses_left) VALUES (?, ?, ?)", ("WELCOME10", 10, 999))
             conn.execute("INSERT INTO promocodes (code, discount, uses_left) VALUES (?, ?, ?)", ("DEVMARKET20", 20, 100))
+
+            faq_items = [
+                ("Как я получу товар после оплаты?", "Сразу после оплаты вы получите ссылку на скачивание на указанный email. Также ссылка появится в личном кабинете в разделе «Мои заказы».", 1),
+                ("Можно ли вернуть деньги?", "Да, в течение 14 дней после покупки, если товар не был использован. Напишите на support@devmarket.ru — оформим возврат.", 2),
+                ("Можно ли использовать шаблоны в коммерческих целях?", "Да, все товары можно использовать в личных и коммерческих проектах. Перепродажа кода как есть запрещена.", 3),
+                ("Как долго действует лицензия?", "Бессрочно. После покупки вы можете использовать товар без ограничений по времени.", 4),
+                ("Есть ли поддержка?", "Да, мы отвечаем на вопросы в Telegram @devmarket_support в течение дня.", 5),
+                ("Как применить промокод?", "Введите промокод в поле «Промокод» на странице товара перед покупкой. Скидка применится автоматически.", 6),
+            ]
+            for q in faq_items:
+                conn.execute("INSERT INTO faq (question, answer, sort_order) VALUES (?, ?, ?)", q)
 
             conn.commit()
 
@@ -137,6 +163,18 @@ def add_product(title, description, price, image_url, download_url, category, ba
         conn.commit()
 
 
+def update_product(product_id, title, description, price, image_url, download_url, category, badge):
+    with get_db() as conn:
+        conn.execute(
+            """UPDATE products SET
+                title = ?, description = ?, price = ?, image_url = ?,
+                download_url = ?, category = ?, badge = ?
+               WHERE id = ?""",
+            (title, description, price, image_url, download_url, category, badge, product_id)
+        )
+        conn.commit()
+
+
 def delete_product(product_id):
     with get_db() as conn:
         conn.execute("DELETE FROM products WHERE id = ?", (product_id,))
@@ -144,7 +182,6 @@ def delete_product(product_id):
 
 
 def get_similar_products(product_id, category, limit=3):
-    """Возвращает похожие товары из той же категории."""
     with get_db() as conn:
         return conn.execute(
             "SELECT * FROM products WHERE category = ? AND id != ? ORDER BY RANDOM() LIMIT ?",
@@ -220,13 +257,13 @@ def delete_promocode(code):
 
 
 # ---------- Заказы ----------
-def create_order(product_id, payment_id, status="pending", buyer_email=None, promo_code=None, final_price=None):
+def create_order(product_id, payment_id, status="pending", buyer_email=None, promo_code=None, final_price=None, user_id=None):
     with get_db() as conn:
         conn.execute(
             """INSERT OR REPLACE INTO orders
-               (product_id, payment_id, status, buyer_email, promo_code, final_price)
-               VALUES (?, ?, ?, ?, ?, ?)""",
-            (product_id, payment_id, status, buyer_email, promo_code, final_price)
+               (product_id, payment_id, status, buyer_email, promo_code, final_price, user_id)
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (product_id, payment_id, status, buyer_email, promo_code, final_price, user_id)
         )
         conn.commit()
 
@@ -237,6 +274,17 @@ def mark_order_paid(payment_id):
         conn.commit()
 
 
+def get_user_orders(user_id):
+    with get_db() as conn:
+        return conn.execute("""
+            SELECT orders.*, products.title as product_title, products.download_url
+            FROM orders
+            LEFT JOIN products ON orders.product_id = products.id
+            WHERE orders.user_id = ?
+            ORDER BY orders.id DESC
+        """, (user_id,)).fetchall()
+
+
 def get_all_orders():
     with get_db() as conn:
         return conn.execute("""
@@ -244,8 +292,24 @@ def get_all_orders():
             FROM orders
             LEFT JOIN products ON orders.product_id = products.id
             ORDER BY orders.id DESC
-            LIMIT 50
+            LIMIT 100
         """).fetchall()
+
+
+def get_orders_stats():
+    with get_db() as conn:
+        total_orders = conn.execute("SELECT COUNT(*) FROM orders").fetchone()[0]
+        paid_orders = conn.execute("SELECT COUNT(*) FROM orders WHERE status = 'paid'").fetchone()[0]
+        revenue = conn.execute("SELECT COALESCE(SUM(final_price), 0) FROM orders WHERE status = 'paid'").fetchone()[0]
+        users = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+        products = conn.execute("SELECT COUNT(*) FROM products").fetchone()[0]
+        return {
+            "total_orders": total_orders,
+            "paid_orders": paid_orders,
+            "revenue": round(revenue, 2),
+            "users": users,
+            "products": products,
+        }
 
 
 # ---------- Пользователи ----------
@@ -266,3 +330,77 @@ def get_user_by_username(username):
 def get_user_by_email(email):
     with get_db() as conn:
         return conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+
+
+def get_user_by_id(user_id):
+    with get_db() as conn:
+        return conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+
+
+def update_user(user_id, username=None, email=None, password_hash=None):
+    fields, values = [], []
+    if username:
+        fields.append("username = ?")
+        values.append(username)
+    if email:
+        fields.append("email = ?")
+        values.append(email)
+    if password_hash:
+        fields.append("password_hash = ?")
+        values.append(password_hash)
+    if not fields:
+        return
+    values.append(user_id)
+    with get_db() as conn:
+        conn.execute(f"UPDATE users SET {', '.join(fields)} WHERE id = ?", values)
+        conn.commit()
+
+
+def delete_user(user_id):
+    with get_db() as conn:
+        conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
+        conn.commit()
+
+
+# ---------- Избранное ----------
+def toggle_favorite(user_id, product_id):
+    with get_db() as conn:
+        existing = conn.execute(
+            "SELECT id FROM favorites WHERE user_id = ? AND product_id = ?",
+            (user_id, product_id)
+        ).fetchone()
+        if existing:
+            conn.execute("DELETE FROM favorites WHERE id = ?", (existing["id"],))
+            conn.commit()
+            return False
+        else:
+            conn.execute(
+                "INSERT INTO favorites (user_id, product_id) VALUES (?, ?)",
+                (user_id, product_id)
+            )
+            conn.commit()
+            return True
+
+
+def is_favorite(user_id, product_id):
+    with get_db() as conn:
+        return conn.execute(
+            "SELECT id FROM favorites WHERE user_id = ? AND product_id = ?",
+            (user_id, product_id)
+        ).fetchone() is not None
+
+
+def get_user_favorites(user_id):
+    with get_db() as conn:
+        return conn.execute("""
+            SELECT products.* FROM favorites
+            JOIN products ON favorites.product_id = products.id
+            WHERE favorites.user_id = ?
+            ORDER BY favorites.id DESC
+        """, (user_id,)).fetchall()
+
+
+# ---------- FAQ ----------
+def get_all_faq():
+    with get_db() as conn:
+        return conn.execute("SELECT * FROM faq ORDER BY sort_order, id").fetchall()

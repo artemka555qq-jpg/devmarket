@@ -8,7 +8,31 @@
         <a href="/{{ request.path.split('/')[1] }}/logout" class="btn btn-outline btn-sm">Выйти</a>
     </div>
 
-    <!-- Добавление товара -->
+    <!-- Статистика -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-value">{{ stats.total_orders }}</span>
+            <span class="stat-label">Всего заказов</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">{{ stats.paid_orders }}</span>
+            <span class="stat-label">Оплачено</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">{{ stats.revenue }} ₽</span>
+            <span class="stat-label">Выручка</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">{{ stats.users }}</span>
+            <span class="stat-label">Пользователей</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">{{ stats.products }}</span>
+            <span class="stat-label">Товаров</span>
+        </div>
+    </div>
+
+    <!-- Добавить товар -->
     <div class="admin-card">
         <h3>➕ Добавить товар</h3>
         <form method="post">
@@ -22,15 +46,13 @@
                     <input type="number" name="price" class="form-input" step="0.01" min="1" required>
                 </div>
             </div>
-
             <div class="form-group">
                 <label>Описание</label>
                 <textarea name="description" class="form-input" rows="3"></textarea>
             </div>
-
             <div class="form-row">
                 <div class="form-group">
-                    <label>Ссылка на картинку</label>
+                    <label>Картинка</label>
                     <input type="url" name="image_url" class="form-input" placeholder="https://...">
                 </div>
                 <div class="form-group">
@@ -38,30 +60,20 @@
                     <input type="url" name="download_url" class="form-input" placeholder="https://..." required>
                 </div>
             </div>
-
             <div class="form-row">
                 <div class="form-group">
                     <label>Категория</label>
                     <select name="category" class="form-input">
-                        <option>Боты</option>
-                        <option>Сайты</option>
-                        <option>Гайды</option>
-                        <option>Скрипты</option>
-                        <option>Прочее</option>
+                        <option>Боты</option><option>Сайты</option><option>Гайды</option><option>Скрипты</option><option>Прочее</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Бейдж</label>
                     <select name="badge" class="form-input">
-                        <option value="">— Нет —</option>
-                        <option>ХИТ</option>
-                        <option>NEW</option>
-                        <option>TOP</option>
-                        <option>PRO</option>
+                        <option value="">— Нет —</option><option>ХИТ</option><option>NEW</option><option>TOP</option><option>PRO</option>
                     </select>
                 </div>
             </div>
-
             <button type="submit" class="btn btn-primary">Добавить товар</button>
         </form>
     </div>
@@ -80,33 +92,23 @@
                     <input type="number" name="discount" class="form-input" min="1" max="99" required>
                 </div>
                 <div class="form-group">
-                    <label>Кол-во использований</label>
+                    <label>Лимит</label>
                     <input type="number" name="uses" class="form-input" value="100" min="1">
                 </div>
             </div>
             <button type="submit" class="btn btn-primary">Добавить промокод</button>
         </form>
-
         {% if promocodes %}
         <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>Код</th>
-                    <th>Скидка</th>
-                    <th>Осталось</th>
-                    <th>Активен</th>
-                    <th></th>
-                </tr>
-            </thead>
+            <thead><tr><th>Код</th><th>Скидка</th><th>Осталось</th><th></th></tr></thead>
             <tbody>
                 {% for pc in promocodes %}
                 <tr>
                     <td><strong>{{ pc['code'] }}</strong></td>
                     <td>{{ pc['discount'] }}%</td>
                     <td>{{ pc['uses_left'] }}</td>
-                    <td>{% if pc['active'] %}✅{% else %}❌{% endif %}</td>
                     <td>
-                        <form method="post" action="/{{ request.path.split('/')[1] }}/promo/delete/{{ pc['code'] }}" style="display: inline;" onsubmit="return confirm('Удалить промокод {{ pc['code'] }}?');">
+                        <form method="post" action="/{{ request.path.split('/')[1] }}/promo/delete/{{ pc['code'] }}" style="display: inline;" onsubmit="return confirm('Удалить {{ pc['code'] }}?');">
                             <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
                         </form>
                     </td>
@@ -114,8 +116,6 @@
                 {% endfor %}
             </tbody>
         </table>
-        {% else %}
-        <p style="color: #b4b4d0;">Промокодов пока нет</p>
         {% endif %}
     </div>
 
@@ -123,15 +123,7 @@
     <div class="admin-card">
         <h3>📦 Товары ({{ products|length }})</h3>
         <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Название</th>
-                    <th>Цена</th>
-                    <th>Категория</th>
-                    <th>Действие</th>
-                </tr>
-            </thead>
+            <thead><tr><th>ID</th><th>Название</th><th>Цена</th><th>Категория</th><th>Действие</th></tr></thead>
             <tbody>
                 {% for p in products %}
                 <tr>
@@ -140,8 +132,9 @@
                     <td>{{ p['price'] }} ₽</td>
                     <td>{{ p['category'] }}</td>
                     <td>
+                        <a href="/{{ request.path.split('/')[1] }}/edit/{{ p['id'] }}" class="btn btn-outline btn-sm">✏️</a>
                         <form method="post" action="/{{ request.path.split('/')[1] }}/delete/{{ p['id'] }}" style="display: inline;" onsubmit="return confirm('Удалить «{{ p['title'] }}»?');">
-                            <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+                            <button type="submit" class="btn btn-danger btn-sm">🗑</button>
                         </form>
                     </td>
                 </tr>
@@ -152,19 +145,10 @@
 
     <!-- Заказы -->
     <div class="admin-card">
-        <h3>💳 Последние заказы ({{ orders|length }})</h3>
+        <h3>💳 Заказы ({{ orders|length }})</h3>
         {% if orders %}
         <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>Дата</th>
-                    <th>Товар</th>
-                    <th>Email</th>
-                    <th>Промокод</th>
-                    <th>Сумма</th>
-                    <th>Статус</th>
-                </tr>
-            </thead>
+            <thead><tr><th>Дата</th><th>Товар</th><th>Email</th><th>Промокод</th><th>Сумма</th><th>Статус</th></tr></thead>
             <tbody>
                 {% for o in orders %}
                 <tr>
@@ -173,13 +157,7 @@
                     <td>{{ o['buyer_email'] or '—' }}</td>
                     <td>{{ o['promo_code'] or '—' }}</td>
                     <td>{{ o['final_price'] or '—' }} ₽</td>
-                    <td>
-                        {% if o['status'] == 'paid' %}
-                            <span style="color: #6ee7b7;">✅ Оплачен</span>
-                        {% else %}
-                            <span style="color: #fbbf24;">⏳ Ожидает</span>
-                        {% endif %}
-                    </td>
+                    <td>{% if o['status'] == 'paid' %}<span style="color: #6ee7b7;">✅</span>{% else %}<span style="color: #fbbf24;">⏳</span>{% endif %}</td>
                 </tr>
                 {% endfor %}
             </tbody>

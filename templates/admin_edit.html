@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Редактировать товар — {{ brand.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="page-title">✏️ Редактировать товар</h1>
+
+    <form method="post" class="admin-card" style="max-width: 700px;">
+        <div class="form-row">
+            <div class="form-group">
+                <label>Название *</label>
+                <input type="text" name="title" class="form-input" value="{{ product['title'] }}" required>
+            </div>
+            <div class="form-group">
+                <label>Цена, ₽ *</label>
+                <input type="number" name="price" class="form-input" step="0.01" min="1" value="{{ product['price'] }}" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Описание</label>
+            <textarea name="description" class="form-input" rows="4">{{ product['description'] }}</textarea>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Картинка</label>
+                <input type="url" name="image_url" class="form-input" value="{{ product['image_url'] or '' }}">
+            </div>
+            <div class="form-group">
+                <label>Ссылка на скачивание *</label>
+                <input type="url" name="download_url" class="form-input" value="{{ product['download_url'] }}" required>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Категория</label>
+                <select name="category" class="form-input">
+                    {% for c in ['Боты', 'Сайты', 'Гайды', 'Скрипты', 'Прочее'] %}
+                        <option {% if product['category'] == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Бейдж</label>
+                <select name="badge" class="form-input">
+                    <option value="">— Нет —</option>
+                    {% for b in ['ХИТ', 'NEW', 'TOP', 'PRO'] %}
+                        <option {% if product['badge'] == b %}selected{% endif %}>{{ b }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a href="/{{ request.path.split('/')[1] }}" class="btn btn-outline">Отмена</a>
+    </form>
+</div>
+{% endblock %}

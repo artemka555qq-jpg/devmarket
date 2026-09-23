@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Избранное — {{ brand.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="page-title">⭐ Избранное</h1>
+
+    {% if products %}
+        <div class="products-grid">
+            {% for product in products %}
+            <a href="/product/{{ product['id'] }}" class="product-card">
+                <div class="product-image-wrap">
+                    {% if product['image_url'] %}
+                        <img src="{{ product['image_url'] }}" alt="{{ product['title'] }}" class="product-image">
+                    {% else %}
+                        <div class="product-image-placeholder">📦</div>
+                    {% endif %}
+                </div>
+                <div class="product-body">
+                    <span class="product-category">{{ product['category'] }}</span>
+                    <h3 class="product-title">{{ product['title'] }}</h3>
+                    <p class="product-description">{{ product['description'][:100] }}...</p>
+                    <div class="product-footer">
+                        <span class="product-price">{{ product['price'] }} ₽</span>
+                        <span class="btn btn-primary btn-sm">Подробнее →</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">⭐</div>
+            <h2>В избранном пока ничего нет</h2>
+            <p>Добавляйте товары, нажимая ⭐ на странице товара</p>
+            <a href="/search" class="btn btn-primary" style="margin-top: 1.5rem;">Перейти в каталог</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
