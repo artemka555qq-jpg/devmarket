@@ -17,10 +17,34 @@
         <div class="product-page-info">
             <span class="product-category">{{ product['category'] }}</span>
             <h1>{{ product['title'] }}</h1>
+
+            {% if avg_rating %}
+                <div class="product-rating">
+                    {% for i in range(1, 6) %}
+                        {% if i <= avg_rating|round(0, 'floor') %}
+                            ⭐
+                        {% else %}
+                            ☆
+                        {% endif %}
+                    {% endfor %}
+                    <span class="rating-text">{{ avg_rating }} / 5 ({{ reviews_count }} отзыв{{ 'ов' if reviews_count > 1 else '' }})</span>
+                </div>
+            {% endif %}
+
             <p class="product-page-description">{{ product['description'] }}</p>
             <div class="product-page-price">{{ product['price'] }} ₽</div>
 
-            <form action="/create_payment/{{ product['id'] }}" method="post">
+            <form action="/create_payment/{{ product['id'] }}" method="post" class="buy-form">
+                <div class="form-group">
+                    <label>Ваш email (для получения товара)</label>
+                    <input type="email" name="buyer_email" class="form-input" placeholder="your@email.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Промокод (если есть)</label>
+                    <input type="text" name="promo_code" class="form-input" placeholder="WELCOME10">
+                </div>
+
                 <button type="submit" class="btn btn-success">
                     💳 Купить сейчас
                 </button>
@@ -38,5 +62,87 @@
             </div>
         </div>
     </div>
+
+    <!-- Отзывы -->
+    <div class="reviews-section">
+        <h2>💬 Отзывы покупателей {% if reviews_count %}({{ reviews_count }}){% endif %}</h2>
+
+        {% if session.get("username") %}
+            <form method="post" action="/product/{{ product['id'] }}/review" class="review-form">
+                <div class="form-group">
+                    <label>Ваша оценка</label>
+                    <select name="rating" class="form-input" required>
+                        <option value="">— Выберите —</option>
+                        <option value="5">⭐⭐⭐⭐⭐ Отлично</option>
+                        <option value="4">⭐⭐⭐⭐ Хорошо</option>
+                        <option value="3">⭐⭐⭐ Нормально</option>
+                        <option value="2">⭐⭐ Плохо</option>
+                        <option value="1">⭐ Ужасно</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Ваш отзыв</label>
+                    <textarea name="text" class="form-input" rows="4" placeholder="Расскажите о товаре..." required></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Оставить отзыв</button>
+            </form>
+        {% else %}
+            <p class="reviews-login-hint">
+                <a href="/login">Войдите</a>, чтобы оставить отзыв
+            </p>
+        {% endif %}
+
+        {% if reviews %}
+            <div class="reviews-list">
+                {% for r in reviews %}
+                    <div class="review-item">
+                        <div class="review-header">
+                            <span class="review-author">👤 {{ r['username'] }}</span>
+                            <span class="review-date">{{ r['created_at'] }}</span>
+                        </div>
+                        <div class="review-rating">
+                            {% for i in range(1, 6) %}
+                                {% if i <= r['rating'] %}⭐{% else %}☆{% endif %}
+                            {% endfor %}
+                        </div>
+                        <p class="review-text">{{ r['text'] }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="reviews-empty">Отзывов пока нет. Будьте первым!</p>
+        {% endif %}
+    </div>
+
+    <!-- Похожие товары -->
+    {% if similar %}
+        <div class="similar-section">
+            <h2>🎯 Вам может понравиться</h2>
+            <div class="products-grid">
+                {% for p in similar %}
+                <a href="/product/{{ p['id'] }}" class="product-card">
+                    <div class="product-image-wrap">
+                        {% if p['image_url'] %}
+                            <img src="{{ p['image_url'] }}" alt="{{ p['title'] }}" class="product-image">
+                        {% else %}
+                            <div class="product-image-placeholder">📦</div>
+                        {% endif %}
+                    </div>
+                    <div class="product-body">
+                        <span class="product-category">{{ p['category'] }}</span>
+                        <h3 class="product-title">{{ p['title'] }}</h3>
+                        <p class="product-description">{{ p['description'][:80] }}{% if p['description']|length > 80 %}...{% endif %}</p>
+                        <div class="product-footer">
+                            <span class="product-price">{{ p['price'] }} ₽</span>
+                            <span class="btn btn-primary btn-sm">Подробнее →</span>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

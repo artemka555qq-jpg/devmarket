@@ -30,6 +30,9 @@ def init_db():
                 product_id INTEGER,
                 payment_id TEXT UNIQUE,
                 status TEXT,
+                buyer_email TEXT,
+                promo_code TEXT,
+                final_price REAL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
 
@@ -38,6 +41,24 @@ def init_db():
                 username TEXT UNIQUE NOT NULL,
                 email TEXT UNIQUE NOT NULL,
                 password_hash TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS reviews (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                product_id INTEGER NOT NULL,
+                username TEXT NOT NULL,
+                rating INTEGER NOT NULL,
+                text TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS promocodes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                code TEXT UNIQUE NOT NULL,
+                discount INTEGER NOT NULL,
+                uses_left INTEGER DEFAULT 100,
+                active INTEGER DEFAULT 1,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         """)
@@ -78,6 +99,11 @@ def init_db():
                     "INSERT INTO products (title, description, price, image_url, download_url, category, badge) VALUES (?, ?, ?, ?, ?, ?, ?)",
                     p
                 )
+
+            # Стартовые промокоды
+            conn.execute("INSERT INTO promocodes (code, discount, uses_left) VALUES (?, ?, ?)", ("WELCOME10", 10, 999))
+            conn.execute("INSERT INTO promocodes (code, discount, uses_left) VALUES (?, ?, ?)", ("DEVMARKET20", 20, 100))
+
             conn.commit()
 
 
@@ -117,12 +143,90 @@ def delete_product(product_id):
         conn.commit()
 
 
-# ---------- Заказы ----------
-def create_order(product_id, payment_id, status="pending"):
+def get_similar_products(product_id, category, limit=3):
+    """Возвращает похожие товары из той же категории."""
+    with get_db() as conn:
+        return conn.execute(
+            "SELECT * FROM products WHERE category = ? AND id != ? ORDER BY RANDOM() LIMIT ?",
+            (category, product_id, limit)
+        ).fetchall()
+
+
+# ---------- Отзывы ----------
+def add_review(product_id, username, rating, text):
     with get_db() as conn:
         conn.execute(
-            "INSERT OR REPLACE INTO orders (product_id, payment_id, status) VALUES (?, ?, ?)",
-            (product_id, payment_id, status)
+            "INSERT INTO reviews (product_id, username, rating, text) VALUES (?, ?, ?, ?)",
+            (product_id, username, rating, text)
+        )
+        conn.commit()
+
+
+def get_reviews(product_id):
+    with get_db() as conn:
+        return conn.execute(
+            "SELECT * FROM reviews WHERE product_id = ? ORDER BY id DESC",
+            (product_id,)
+        ).fetchall()
+
+
+def get_avg_rating(product_id):
+    with get_db() as conn:
+        row = conn.execute(
+            "SELECT AVG(rating) as avg_r, COUNT(*) as count FROM reviews WHERE product_id = ?",
+            (product_id,)
+        ).fetchone()
+        if row and row["count"] > 0:
+            return round(row["avg_r"], 1), row["count"]
+        return None, 0
+
+
+# ---------- Промокоды ----------
+def get_promocode(code):
+    with get_db() as conn:
+        return conn.execute(
+            "SELECT * FROM promocodes WHERE code = ? AND active = 1 AND uses_left > 0",
+            (code.upper(),)
+        ).fetchone()
+
+
+def use_promocode(code):
+    with get_db() as conn:
+        conn.execute(
+            "UPDATE promocodes SET uses_left = uses_left - 1 WHERE code = ?",
+            (code.upper(),)
+        )
+        conn.commit()
+
+
+def get_all_promocodes():
+    with get_db() as conn:
+        return conn.execute("SELECT * FROM promocodes ORDER BY id DESC").fetchall()
+
+
+def add_promocode(code, discount, uses_left=100):
+    with get_db() as conn:
+        conn.execute(
+            "INSERT OR REPLACE INTO promocodes (code, discount, uses_left) VALUES (?, ?, ?)",
+            (code.upper(), discount, uses_left)
+        )
+        conn.commit()
+
+
+def delete_promocode(code):
+    with get_db() as conn:
+        conn.execute("DELETE FROM promocodes WHERE code = ?", (code,))
+        conn.commit()
+
+
+# ---------- Заказы ----------
+def create_order(product_id, payment_id, status="pending", buyer_email=None, promo_code=None, final_price=None):
+    with get_db() as conn:
+        conn.execute(
+            """INSERT OR REPLACE INTO orders
+               (product_id, payment_id, status, buyer_email, promo_code, final_price)
+               VALUES (?, ?, ?, ?, ?, ?)""",
+            (product_id, payment_id, status, buyer_email, promo_code, final_price)
         )
         conn.commit()
 
