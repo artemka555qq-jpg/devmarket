@@ -22,6 +22,10 @@ if SHOP_ID and SECRET_KEY:
 # 🔐 Пароль для админки
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin2026")
 
+# 🔒 Секретные URL (никому не показывать!)
+SECRET_ADMIN_URL = "admin-9f8a7b6c"       # ← ваш секретный адрес админки
+SECRET_REQUISITES_URL = "requisites-3a7c2d"  # ← ваш секретный адрес реквизитов
+
 
 # 🎨 Бренд
 BRAND = {
@@ -72,7 +76,8 @@ def contact():
     return render_template("contact.html", success=False)
 
 
-@app.route("/requisites")
+# 🕵️ Скрытая страница реквизитов — доступна только по секретному URL
+@app.route(f"/{SECRET_REQUISITES_URL}")
 def requisites():
     return render_template("requisites.html")
 
@@ -199,8 +204,8 @@ def yookassa_webhook():
     return "OK", 200
 
 
-# ---------- Админ-панель ----------
-@app.route("/admin", methods=["GET", "POST"])
+# 🔐 Скрытая админ-панель — доступна только по секретному URL
+@app.route(f"/{SECRET_ADMIN_URL}", methods=["GET", "POST"])
 def admin():
     if request.method == "POST" and "password" in request.form:
         if request.form["password"] == ADMIN_PASSWORD:
@@ -235,7 +240,7 @@ def admin():
     return render_template("admin.html", products=products, orders=orders)
 
 
-@app.route("/admin/delete/<int:product_id>", methods=["POST"])
+@app.route(f"/{SECRET_ADMIN_URL}/delete/<int:product_id>", methods=["POST"])
 def admin_delete(product_id):
     if not session.get("is_admin"):
         abort(403)
@@ -244,7 +249,7 @@ def admin_delete(product_id):
     return redirect(url_for("admin"))
 
 
-@app.route("/admin/logout")
+@app.route(f"/{SECRET_ADMIN_URL}/logout")
 def admin_logout():
     session.pop("is_admin", None)
     flash("Вы вышли из админки", "success")
