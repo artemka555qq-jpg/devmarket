@@ -2300,3 +2300,265 @@ body.theme-light .cookie-content p { color: #4a4a6a; }
     .logo { font-size: 1.15rem; }
     .premium-hero h1 { font-size: 1.75rem; }
 }
+
+
+/* ============================================
+   Hero-счётчики + Секции + Почему мы + CTA
+   ============================================ */
+
+/* Hero-счётчики */
+.hero-stats {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin: 2rem 0 2.5rem;
+    flex-wrap: wrap;
+}
+
+.hero-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.hero-stat-value {
+    font-size: 2rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #00d9ff, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -1px;
+    line-height: 1;
+}
+
+.hero-stat-label {
+    font-size: 0.8rem;
+    color: #b4b4d0;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 500;
+}
+
+.hero-stat-divider {
+    width: 1px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Hero-кнопки */
+.hero-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+}
+
+.btn-hero {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    border-radius: 14px;
+}
+
+/* Hero-промокод */
+.hero-promo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 1.5rem;
+    background: rgba(236, 72, 153, 0.1);
+    border: 1px dashed rgba(236, 72, 153, 0.4);
+    border-radius: 50px;
+    font-size: 0.95rem;
+    color: #f0abfc;
+    margin-bottom: 2rem;
+    animation: pulseDot 3s infinite;
+}
+
+.hero-promo .promo-icon {
+    font-size: 1.2rem;
+}
+
+.hero-promo strong {
+    color: #ffffff;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+/* Секции товаров */
+.products-section {
+    margin-top: 5rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.section-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text-primary);
+}
+
+.section-link {
+    color: #00d9ff;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.section-link:hover {
+    color: #ec4899;
+    transform: translateX(4px);
+}
+
+/* Почему мы */
+.why-section {
+    margin-top: 6rem;
+    padding-top: 4rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.why-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+}
+
+.why-card {
+    background: rgba(20, 20, 40, 0.5);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.why-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(124, 58, 237, 0.4);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.why-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 20px rgba(0, 217, 255, 0.4));
+}
+
+.why-card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.75rem;
+}
+
+.why-card p {
+    color: #b4b4d0;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* CTA-блок */
+.cta-section {
+    margin-top: 6rem;
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(236, 72, 153, 0.1));
+    border: 1px solid rgba(124, 58, 237, 0.3);
+    border-radius: 32px;
+    text-align: center;
+}
+
+.cta-section h2 {
+    font-size: 2rem;
+    font-weight: 900;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 50%, #f0abfc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -1px;
+}
+
+.cta-section p {
+    color: #b4b4d0;
+    font-size: 1.05rem;
+    margin-bottom: 2rem;
+}
+
+/* Светлая тема */
+body.theme-light .why-card {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.theme-light .why-card h3 { color: #1a1a2e; }
+body.theme-light .why-card p { color: #4a4a6a; }
+body.theme-light .section-title { color: #1a1a2e; }
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+    .hero-stats {
+        gap: 1rem;
+    }
+
+    .hero-stat-value {
+        font-size: 1.5rem;
+    }
+
+    .hero-stat-divider {
+        height: 30px;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-hero {
+        width: 100%;
+    }
+
+    .hero-promo {
+        font-size: 0.85rem;
+        padding: 0.6rem 1rem;
+    }
+
+    .products-section {
+        margin-top: 3rem;
+    }
+
+    .section-title {
+        font-size: 1.35rem;
+    }
+
+    .why-section,
+    .cta-section {
+        margin-top: 4rem;
+        padding-top: 3rem;
+    }
+
+    .cta-section {
+        padding: 2.5rem 1.5rem;
+    }
+
+    .cta-section h2 {
+        font-size: 1.5rem;
+    }
+
+    .why-grid {
+        grid-template-columns: 1fr;
+    }
+}

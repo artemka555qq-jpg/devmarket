@@ -7,11 +7,48 @@
 
 {% block content %}
 <div class="container">
+
+    <!-- Hero-блок -->
     <div class="hero">
-        <span class="hero-badge">Цифровые товары 2026</span>
+        <span class="hero-badge">🎉 Новинки 2026 — скидка 10% на первый заказ</span>
         <h1>{{ brand.name }}</h1>
         <p>{{ brand.description }}</p>
 
+        <!-- Счётчики -->
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <span class="hero-stat-value">{{ products|length }}</span>
+                <span class="hero-stat-label">товар{{ 'ов' if products|length != 1 else '' }}</span>
+            </div>
+            <div class="hero-stat-divider"></div>
+            <div class="hero-stat">
+                <span class="hero-stat-value">12</span>
+                <span class="hero-stat-label">клиентов</span>
+            </div>
+            <div class="hero-stat-divider"></div>
+            <div class="hero-stat">
+                <span class="hero-stat-value">4.9★</span>
+                <span class="hero-stat-label">рейтинг</span>
+            </div>
+        </div>
+
+        <!-- Кнопка-призыв -->
+        <div class="hero-actions">
+            <a href="/search" class="btn btn-primary btn-hero">
+                🛒 Смотреть каталог
+            </a>
+            <a href="/premium" class="btn btn-outline btn-hero">
+                💎 Premium
+            </a>
+        </div>
+
+        <!-- Промокод -->
+        <div class="hero-promo">
+            <span class="promo-icon">🎁</span>
+            <span>Промокод <strong>WELCOME10</strong> — скидка 10%</span>
+        </div>
+
+        <!-- Преимущества -->
         <div class="advantages">
             <div class="advantage-item">
                 <span class="advantage-icon">⚡</span>
@@ -28,45 +65,152 @@
         </div>
     </div>
 
-    {% if products %}
-    <div class="products-grid">
-        {% for product in products %}
-        <a href="/product/{{ product['id'] }}" class="product-card">
-            <div class="product-image-wrap">
-                {% if product['image_url'] %}
-                    <img src="{{ product['image_url'] }}" alt="{{ product['title'] }}" class="product-image">
-                {% else %}
-                    <div class="product-image-placeholder">📦</div>
-                {% endif %}
-
-                {% if product['badge'] %}
-                    {% set badge_class = 'badge-hit' if product['badge'] == 'ХИТ' else
-                                         'badge-new' if product['badge'] == 'NEW' else
-                                         'badge-top' if product['badge'] == 'TOP' else
-                                         'badge-pro' %}
-                    <span class="product-badge {{ badge_class }}">{{ product['badge'] }}</span>
-                {% endif %}
-            </div>
-
-            <div class="product-body">
-                <span class="product-category">{{ product['category'] }}</span>
-                <h3 class="product-title">{{ product['title'] }}</h3>
-                <p class="product-description">{{ product['description'][:110] }}{% if product['description']|length > 110 %}...{% endif %}</p>
-
-                <div class="product-footer">
-                    <span class="product-price">{{ product['price'] }} ₽</span>
-                    <span class="btn btn-primary btn-sm">Подробнее →</span>
+    <!-- 🔥 Хиты продаж -->
+    {% set hits = products|selectattr('badge', 'equalto', 'ХИТ')|list %}
+    {% if hits %}
+    <section class="products-section">
+        <div class="section-header">
+            <h2 class="section-title">🔥 Хиты продаж</h2>
+            <a href="/search" class="section-link">Смотреть все →</a>
+        </div>
+        <div class="products-grid">
+            {% for product in hits %}
+            <a href="/product/{{ product['id'] }}" class="product-card">
+                <div class="product-image-wrap">
+                    {% if product['image_url'] %}
+                        <img src="{{ product['image_url'] }}" alt="{{ product['title'] }}" class="product-image">
+                    {% else %}
+                        <div class="product-image-placeholder">📦</div>
+                    {% endif %}
+                    <span class="product-badge badge-hit">{{ product['badge'] }}</span>
                 </div>
-            </div>
-        </a>
-        {% endfor %}
-    </div>
-    {% else %}
-    <div class="empty-state">
-        <div class="empty-state-icon">📦</div>
-        <h2>Товаров пока нет</h2>
-        <p>Заглядывайте позже — мы добавляем новое каждый день</p>
-    </div>
+                <div class="product-body">
+                    <span class="product-category">{{ product['category'] }}</span>
+                    <h3 class="product-title">{{ product['title'] }}</h3>
+                    <p class="product-description">{{ product['description'][:110] }}{% if product['description']|length > 110 %}...{% endif %}</p>
+                    <div class="product-footer">
+                        <span class="product-price">{{ product['price'] }} ₽</span>
+                        <span class="btn btn-primary btn-sm">Подробнее →</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
     {% endif %}
+
+    <!-- 🆕 Новинки -->
+    {% set new_items = products|selectattr('badge', 'equalto', 'NEW')|list %}
+    {% if new_items %}
+    <section class="products-section">
+        <div class="section-header">
+            <h2 class="section-title">🆕 Новинки</h2>
+            <a href="/search" class="section-link">Смотреть все →</a>
+        </div>
+        <div class="products-grid">
+            {% for product in new_items %}
+            <a href="/product/{{ product['id'] }}" class="product-card">
+                <div class="product-image-wrap">
+                    {% if product['image_url'] %}
+                        <img src="{{ product['image_url'] }}" alt="{{ product['title'] }}" class="product-image">
+                    {% else %}
+                        <div class="product-image-placeholder">📦</div>
+                    {% endif %}
+                    <span class="product-badge badge-new">{{ product['badge'] }}</span>
+                </div>
+                <div class="product-body">
+                    <span class="product-category">{{ product['category'] }}</span>
+                    <h3 class="product-title">{{ product['title'] }}</h3>
+                    <p class="product-description">{{ product['description'][:110] }}{% if product['description']|length > 110 %}...{% endif %}</p>
+                    <div class="product-footer">
+                        <span class="product-price">{{ product['price'] }} ₽</span>
+                        <span class="btn btn-primary btn-sm">Подробнее →</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- 📦 Все товары -->
+    <section class="products-section">
+        <div class="section-header">
+            <h2 class="section-title">📦 Все товары</h2>
+            <a href="/search" class="section-link">Смотреть все →</a>
+        </div>
+        {% if products %}
+        <div class="products-grid">
+            {% for product in products %}
+            <a href="/product/{{ product['id'] }}" class="product-card">
+                <div class="product-image-wrap">
+                    {% if product['image_url'] %}
+                        <img src="{{ product['image_url'] }}" alt="{{ product['title'] }}" class="product-image">
+                    {% else %}
+                        <div class="product-image-placeholder">📦</div>
+                    {% endif %}
+                    {% if product['badge'] %}
+                        {% set badge_class = 'badge-hit' if product['badge'] == 'ХИТ' else
+                                             'badge-new' if product['badge'] == 'NEW' else
+                                             'badge-top' if product['badge'] == 'TOP' else
+                                             'badge-pro' %}
+                        <span class="product-badge {{ badge_class }}">{{ product['badge'] }}</span>
+                    {% endif %}
+                </div>
+                <div class="product-body">
+                    <span class="product-category">{{ product['category'] }}</span>
+                    <h3 class="product-title">{{ product['title'] }}</h3>
+                    <p class="product-description">{{ product['description'][:110] }}{% if product['description']|length > 110 %}...{% endif %}</p>
+                    <div class="product-footer">
+                        <span class="product-price">{{ product['price'] }} ₽</span>
+                        <span class="btn btn-primary btn-sm">Подробнее →</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📦</div>
+            <h2>Товаров пока нет</h2>
+            <p>Заглядывайте позже — мы добавляем новое каждый день</p>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- 💜 Почему мы -->
+    <section class="why-section">
+        <h2 class="section-title" style="text-align: center; margin-bottom: 3rem;">💜 Почему DevMarket</h2>
+        <div class="why-grid">
+            <div class="why-card">
+                <div class="why-icon">⚡</div>
+                <h3>Мгновенная доставка</h3>
+                <p>Сразу после оплаты вы получаете ссылку на скачивание товара на email.</p>
+            </div>
+            <div class="why-card">
+                <div class="why-icon">📜</div>
+                <h3>Лицензия</h3>
+                <p>Все товары можно использовать в личных и коммерческих проектах.</p>
+            </div>
+            <div class="why-card">
+                <div class="why-icon">🛠</div>
+                <h3>Поддержка</h3>
+                <p>Помогаем с настройкой и отвечаем на вопросы в Telegram.</p>
+            </div>
+            <div class="why-card">
+                <div class="why-icon">💎</div>
+                <h3>Premium</h3>
+                <p>Подписка Premium даёт скидку 20% и ранний доступ к новинкам.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 📞 CTA-блок -->
+    <section class="cta-section">
+        <h2>Не нашли, что искали?</h2>
+        <p>Напишите нам — поможем подобрать решение под вашу задачу</p>
+        <a href="/contact" class="btn btn-primary btn-hero">📞 Связаться</a>
+    </section>
+
 </div>
 {% endblock %}
