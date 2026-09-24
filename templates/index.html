@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% block title %}{{ brand.name }} — Цифровые товары 2026{% endblock %}
 
+{% block og_title %}DevMarket — Готовые решения для разработчиков{% endblock %}
+{% block og_description %}Боты, шаблоны сайтов, скрипты и гайды. Мгновенная доставка после оплаты.{% endblock %}
+{% block og_image %}https://trydevmarket.ru/static/og-preview.jpg{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="hero">
@@ -8,7 +12,6 @@
         <h1>{{ brand.name }}</h1>
         <p>{{ brand.description }}</p>
 
-        <!-- Преимущества вместо вымышленной статистики -->
         <div class="advantages">
             <div class="advantage-item">
                 <span class="advantage-icon">⚡</span>

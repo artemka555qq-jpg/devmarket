@@ -1,5 +1,9 @@
 {% extends "base.html" %}
-{% block title %}{{ post['title'] }} — Блог{% endblock %}
+{% block title %}{{ post['title'] }} — Блог {{ brand.name }}{% endblock %}
+
+{% block og_title %}{{ post['title'] }}{% endblock %}
+{% block og_description %}{{ post['excerpt'] or post['content'][:150] }}{% endblock %}
+{% block og_image %}{{ post['image_url'] or 'https://trydevmarket.ru/static/og-preview.jpg' }}{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -7,7 +11,7 @@
 
     <article class="blog-post">
         <h1>{{ post['title'] }}</h1>
-        <p class="blog-post-date">{{ post['created_at'][:10] }}</p>
+        <p class="blog-post-date">📅 {{ post['created_at'][:10] }}</p>
 
         {% if post['image_url'] %}
             <img src="{{ post['image_url'] }}" alt="{{ post['title'] }}" class="blog-post-image">

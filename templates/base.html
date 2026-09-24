@@ -5,12 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>{% block title %}{{ brand.name }} — {{ brand.tagline }}{% endblock %}</title>
     <meta name="description" content="{{ brand.description }}">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon.png') }}">
+
+    <!-- Open Graph (для Telegram, ВК, WhatsApp) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://trydevmarket.ru{{ request.path }}">
+    <meta property="og:title" content="{% block og_title %}{{ brand.name }} — {{ brand.tagline }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ brand.description }}{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}https://trydevmarket.ru/static/og-preview.jpg{% endblock %}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="{{ brand.name }}">
+    <meta property="og:locale" content="ru_RU">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ brand.name }} — {{ brand.tagline }}">
+    <meta name="twitter:description" content="{{ brand.description }}">
+    <meta name="twitter:image" content="https://trydevmarket.ru/static/og-preview.jpg">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body class="theme-{{ session.get('theme', 'dark') }}">
+
+<!-- Прогресс-бар чтения (для блога) -->
+<div class="reading-progress" id="reading-progress"></div>
 
 <nav class="navbar">
     <div class="nav-container">
@@ -27,7 +52,6 @@
             <a href="/faq">{{ t('faq') }}</a>
             <a href="/premium">💎 {{ t('premium') }}</a>
 
-            <!-- Переключатели -->
             <div class="nav-controls">
                 <div class="lang-switch">
                     <a href="/set-lang/ru" class="{% if lang == 'ru' %}active{% endif %}">RU</a>
@@ -102,6 +126,7 @@
     {% endif %}
 </main>
 
+<!-- Toast-уведомления -->
 <div class="toast-container" id="toast-container">
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% for category, msg in messages %}
@@ -114,20 +139,63 @@
     {% endwith %}
 </div>
 
+<!-- Cookie-баннер -->
+<div class="cookie-banner" id="cookie-banner">
+    <div class="cookie-content">
+        <span class="cookie-icon">🍪</span>
+        <p>Мы используем cookie, чтобы сайт работал лучше. Продолжая, вы соглашаетесь с этим.</p>
+        <button class="cookie-accept" onclick="acceptCookies()">Принять</button>
+    </div>
+</div>
+
+<!-- Кнопка «Наверх» -->
+<button class="scroll-top" id="scroll-top" onclick="scrollToTop()" aria-label="Наверх">
+    ↑
+</button>
+
 <footer class="footer">
-    <div class="footer-content">
-        <p><strong>{{ brand.name }}</strong> — {{ brand.tagline }}</p>
-        <p>© {{ brand.year }} Все права защищены</p>
-        <p class="footer-contacts">
-            Связь:
-            <a href="https://t.me/{{ brand.contacts.telegram[1:] }}" target="_blank">{{ brand.contacts.telegram }}</a>
-            •
-            <a href="mailto:{{ brand.contacts.email }}">{{ brand.contacts.email }}</a>
-        </p>
+    <div class="footer-container">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h4 class="footer-logo">{{ brand.name }}</h4>
+                <p class="footer-description">{{ brand.tagline }}</p>
+                <div class="footer-socials">
+                    <a href="https://t.me/{{ brand.contacts.telegram[1:] }}" target="_blank" title="Telegram">💬</a>
+                    <a href="mailto:{{ brand.contacts.email }}" title="Email">📧</a>
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-title">Каталог</h4>
+                <a href="/">Главная</a>
+                <a href="/search">Все товары</a>
+                <a href="/premium">Premium</a>
+                <a href="/favorites">Избранное</a>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-title">Помощь</h4>
+                <a href="/faq">FAQ</a>
+                <a href="/blog">Блог</a>
+                <a href="/about">О нас</a>
+                <a href="/contact">Контакты</a>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-title">Связь</h4>
+                <a href="https://t.me/{{ brand.contacts.telegram[1:] }}" target="_blank">{{ brand.contacts.telegram }}</a>
+                <a href="mailto:{{ brand.contacts.email }}">{{ brand.contacts.email }}</a>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>© {{ brand.year }} {{ brand.name }}. Все права защищены.</p>
+        </div>
     </div>
 </footer>
 
 <script>
+// Бургер-меню
 const burger = document.getElementById('burger');
 const navLinks = document.getElementById('nav-links');
 if (burger) {
@@ -143,6 +211,7 @@ if (burger) {
     });
 }
 
+// Меню пользователя
 const userMenuBtn = document.getElementById('user-menu-btn');
 const userDropdown = document.getElementById('user-dropdown');
 if (userMenuBtn && userDropdown) {
@@ -159,11 +228,67 @@ if (userMenuBtn && userDropdown) {
     });
 }
 
+// Toast-уведомления
 document.querySelectorAll('.toast[data-auto-close]').forEach(toast => {
     setTimeout(() => {
         toast.classList.add('toast-hide');
         setTimeout(() => toast.remove(), 400);
     }, parseInt(toast.dataset.autoClose));
+});
+
+// Cookie-баннер
+function acceptCookies() {
+    localStorage.setItem('cookies_accepted', '1');
+    document.getElementById('cookie-banner').classList.remove('show');
+}
+
+window.addEventListener('load', () => {
+    if (!localStorage.getItem('cookies_accepted')) {
+        setTimeout(() => {
+            document.getElementById('cookie-banner')?.classList.add('show');
+        }, 1500);
+    }
+});
+
+// Кнопка «Наверх»
+const scrollTopBtn = document.getElementById('scroll-top');
+
+function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+window.addEventListener('scroll', () => {
+    if (scrollTopBtn) {
+        if (window.scrollY > 300) {
+            scrollTopBtn.classList.add('show');
+        } else {
+            scrollTopBtn.classList.remove('show');
+        }
+    }
+
+    // Прогресс-бар чтения
+    const progressBar = document.getElementById('reading-progress');
+    if (progressBar) {
+        const article = document.querySelector('.blog-post') || document.body;
+        const articleTop = article.offsetTop;
+        const articleHeight = article.offsetHeight;
+        const scrolled = window.scrollY - articleTop;
+        const percent = Math.max(0, Math.min(100, (scrolled / (articleHeight - window.innerHeight)) * 100));
+        progressBar.style.width = percent + '%';
+    }
+});
+
+// Плавное появление при скролле
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('animate-in');
+        }
+    });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.product-card, .blog-card, .profile-card, .admin-card, .stat-card').forEach(el => {
+    observer.observe(el);
 });
 </script>
 
